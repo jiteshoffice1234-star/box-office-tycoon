@@ -1,0 +1,8 @@
+{
+	"appId": "com.aurora.boxofficetycoon",
+	"appName": "Box Office Tycoon",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}
