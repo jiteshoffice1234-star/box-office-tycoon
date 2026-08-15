@@ -1,0 +1,60 @@
+name: Build Android APK
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Sync web app into Android project
+        run: npx cap sync android
+
+      - name: Create signing keystore
+        working-directory: android
+        run: |
+          keytool -genkeypair -v \
+            -keystore release.keystore \
+            -alias boxoffice \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass boxoffice123 -keypass boxoffice123 \
+            -dname "CN=Box Office Tycoon, OU=Games, O=Aurora Pictures, C=US"
+          # gradle's file() in the app module resolves relative to android/app,
+          # so point at the keystore in android/ via ../
+          echo "storeFile=../release.keystore" > keystore.properties
+          echo "storePassword=boxoffice123" >> keystore.properties
+          echo "keyAlias=boxoffice" >> keystore.properties
+          echo "keyPassword=boxoffice123" >> keystore.properties
+
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew assembleRelease
+
+      - name: Upload APK to release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${GITHUB_REF_NAME}" android/app/build/outputs/apk/release/app-release.apk --clobber
