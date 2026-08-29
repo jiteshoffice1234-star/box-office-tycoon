@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Box Office Tycoon</string>
+    <string name="title_activity_main">Box Office Tycoon</string>
+    <string name="package_name">com.aurora.boxofficetycoon</string>
+    <string name="custom_url_scheme">com.aurora.boxofficetycoon</string>
+</resources>

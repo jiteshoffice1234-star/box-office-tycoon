@@ -1,0 +1,16 @@
+# deps + build output
+node_modules/
+dist/
+
+# local tooling / preview state
+.freebuff/
+*.log
+*.log.err
+
+# android secrets (generated per-build on CI)
+android/keystore.properties
+android/*.keystore
+
+# os junk
+.DS_Store
+Thumbs.db

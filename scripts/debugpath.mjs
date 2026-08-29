@@ -1,0 +1,10 @@
+import path from 'node:path'
+const cwd = process.cwd()
+console.log('cwd:', JSON.stringify(cwd))
+console.log('resolve(cwd):', JSON.stringify(path.resolve(cwd)))
+console.log('resolve(cwd,"dist"):', JSON.stringify(path.resolve(cwd, 'dist')))
+const slashed = cwd.replace(/\\/g, '/')
+console.log('slashed:', JSON.stringify(slashed))
+console.log('resolve(slashed):', JSON.stringify(path.resolve(slashed)))
+console.log('resolve(slashed,"dist"):', JSON.stringify(path.resolve(slashed, 'dist')))
+console.log('fileURLToPath of cwd:', JSON.stringify(import.meta.url))
