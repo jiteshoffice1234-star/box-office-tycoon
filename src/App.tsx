@@ -9,8 +9,6 @@ import { Scripts } from './components/Scripts'
 import { Casting } from './components/Casting'
 import { Marketing } from './components/Marketing'
 import { Movies } from './components/Movies'
-import { Awards } from './components/Awards'
-import { News } from './components/News'
 import { Bank } from './components/Bank'
 import { Managers } from './components/Managers'
 import { Btn, fmtMoney } from './components/ui'
@@ -19,10 +17,8 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'studio', label: 'Studio', icon: '🎬' },
   { id: 'scripts', label: 'Scripts', icon: '✍️' },
   { id: 'casting', label: 'Cast', icon: '🎭' },
-  { id: 'marketing', label: 'Market', icon: '📣' },
+  { id: 'marketing', label: 'Stream', icon: '📡' },
   { id: 'movies', label: 'Films', icon: '🎥' },
-  { id: 'awards', label: 'Awards', icon: '🏆' },
-  { id: 'news', label: 'News', icon: '📰' },
   { id: 'bank', label: 'Bank', icon: '🏦' },
   { id: 'managers', label: 'Staff', icon: '👔' },
 ]
@@ -31,7 +27,7 @@ function pendingTab(s: GameState): Tab | null {
   if (s.production) {
     const c = castOf(s, s.production.movie)
     if (s.production.phase === 'preProduction' && (!c.writer || !c.director || c.actors.length === 0)) return 'casting'
-    if (s.production.phase === 'marketing' && s.production.releaseWeek === null) return 'marketing'
+    if (s.production.phase === 'marketing' && s.production.releaseWeek === null) return 'scripts'
   }
   return null
 }
@@ -39,8 +35,21 @@ function pendingTab(s: GameState): Tab | null {
 export default function App() {
   const [state, setState] = useState<GameState | null>(() => loadGame())
   const [tab, setTab] = useState<Tab>('studio')
+  // VYRA-style paper light by default, persisted
+  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
+    typeof localStorage !== 'undefined' && localStorage.getItem('box-office-tycoon-theme') === 'dark' ? 'dark' : 'light',
+  )
 
   const apply = (fn: (s: GameState) => GameState) => setState((s) => (s ? fn(s) : s))
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    try {
+      localStorage.setItem('box-office-tycoon-theme', theme)
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [theme])
 
   // autosave (debounced)
   useEffect(() => {
@@ -50,11 +59,12 @@ export default function App() {
   }, [state])
 
   // auto-advance: keep the world turning until a decision is needed
+  // 850ms (was 500ms) — fewer renders per second = no jank on mobile
   const decision = useMemo(() => (state ? decisionNeeded(state) : null), [state])
   useEffect(() => {
-    if (!state || state.gameOver) return
+    if (!state) return
     if (state.autoAdvance && !decision) {
-      const t = setTimeout(() => apply(tick), 500)
+      const t = setTimeout(() => apply(tick), 850)
       return () => clearTimeout(t)
     }
   }, [state, decision])
@@ -71,9 +81,7 @@ export default function App() {
     )
   }
 
-  if (state.gameOver) {
-    return <GameOver state={state} onRestart={() => { clearSave(); setState(null) }} />
-  }
+
 
   const pending = pendingTab(state)
 
@@ -84,6 +92,8 @@ export default function App() {
         onNextWeek={() => apply(tick)}
         onFastForward={() => apply(fastForward)}
         onToggleAuto={() => apply(toggleAutoAdvance)}
+        theme={theme}
+        onToggleTheme={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}
         onNewGame={() => {
           if (window.confirm('Start a brand-new studio? Your current save will be discarded.')) {
             clearSave()
@@ -105,10 +115,7 @@ export default function App() {
           {tab === 'scripts' && <Scripts state={state} apply={apply} />}
           {tab === 'casting' && <Casting state={state} apply={apply} />}
           {tab === 'marketing' && <Marketing state={state} apply={apply} />}
-          {tab === 'movies' && <Movies state={state} apply={apply} />}
-          {tab === 'awards' && <Awards state={state} />}
-          {tab === 'news' && <News state={state} />}
-          {tab === 'bank' && <Bank state={state} apply={apply} />}
+          {tab === 'movies' && <Movies state={state} apply={apply} />}          {tab === 'bank' && <Bank state={state} apply={apply} />}
           {tab === 'managers' && <Managers state={state} apply={apply} />}
         </main>
         <footer className="footer">
@@ -140,8 +147,7 @@ function StartScreen({ onStart }: { onStart: (name: string, cash: number) => voi
       <div className="boot-card">
         <div className="boot-title-chip">Box Office Tycoon</div>
         <p className="muted" style={{ marginTop: 16 }}>
-          Start an indie studio and climb to Global Major. Write scripts, negotiate with stars, let marketing run
-          itself, and chase the #1 spot at the yearly awards.
+          Start an indie studio and climb to Global Major. Write scripts, negotiate with stars, and let your empire grow.
         </p>
         <input
           className="boot-input"
@@ -187,28 +193,4 @@ function StartScreen({ onStart }: { onStart: (name: string, cash: number) => voi
   )
 }
 
-function GameOver({ state, onRestart }: { state: GameState; onRestart: () => void }) {
-  return (
-    <div className="boot">
-      <div className="boot-card">
-        <div className="boot-title-chip" style={{ background: '#e5e0d2' }}>
-          Dark Marquee
-        </div>
-        <p className="muted" style={{ marginTop: 16 }}>
-          Your studio went bankrupt after {state.stats.moviesMade} movies over {Math.max(1, Math.floor(state.week / 52))} year(s).
-        </p>
-        <div className="stats-grid" style={{ margin: '16px 0' }}>
-          <div className="stat"><div className="stat-label">Movies made</div><div className="stat-value">{state.stats.moviesMade}</div></div>
-          <div className="stat"><div className="stat-label">Awards won</div><div className="stat-value">{state.stats.awardsWon}</div></div>
-          <div className="stat"><div className="stat-label">Blockbusters</div><div className="stat-value">{state.stats.blockbusters}</div></div>
-          <div className="stat"><div className="stat-label">Disasters</div><div className="stat-value">{state.stats.disasters}</div></div>
-          <div className="stat"><div className="stat-label">Franchise parts</div><div className="stat-value">{state.stats.franchises}</div></div>
-          <div className="stat"><div className="stat-label">Total earned</div><div className="stat-value">{fmtMoney(state.stats.totalEarned)}</div></div>
-        </div>
-        <Btn kind="primary" onClick={onRestart}>
-          Start over
-        </Btn>
-      </div>
-    </div>
-  )
-}
+

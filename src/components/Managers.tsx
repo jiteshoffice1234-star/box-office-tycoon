@@ -11,11 +11,18 @@ export function Managers({ state, apply }: { state: GameState; apply: (fn: (s: G
   const [quality, setQuality] = useState(75)
   const [budget, setBudget] = useState(5_000_000)
   const [strategy, setStrategy] = useState(state.defaultStrategy)
+  const [contentType, setContentType] = useState<string>('any')
+  const [franchiseName, setFranchiseName] = useState('')
+  const [customLabel, setCustomLabel] = useState('')
+  const [sequelsOnly, setSequelsOnly] = useState(false)
 
   const managers = state.managers
   const managerProds = state.managerProductions
   const busyManagerIds = new Set(managerProds.map((p) => p.managerId))
   const busyMgrTitles = new Map(managerProds.map((p) => [p.managerId, p.movie.title]))
+
+  // Collect all existing franchise names from movies
+  const existingFranchises = [...new Set(state.movies.filter(m => m.franchiseName).map(m => m.franchiseName!))]
 
   const hire = () =>
     apply((s) =>
@@ -26,6 +33,10 @@ export function Managers({ state, apply }: { state: GameState; apply: (fn: (s: G
         qualityTarget: quality,
         maxBudget: budget,
         marketingStrategy: strategy,
+        contentType: contentType as 'movie' | 'series' | 'show' | 'any',
+        franchiseName: franchiseName.trim() || null,
+        customLabel: customLabel.trim() || null,
+        sequelsOnly,
       }),
     )
 
@@ -96,9 +107,61 @@ export function Managers({ state, apply }: { state: GameState; apply: (fn: (s: G
             </select>
           </label>
         </div>
+        {/* Content Control */}
+        <div style={{ marginTop: 10, padding: '10px 12px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, fontFamily: 'var(--font-data)' }}>
+            🎯 Content Control — What will they make?
+          </div>
+          <div className="form-row">
+            <label className="grow">
+              Content type
+              <select value={contentType} onChange={(e) => setContentType(e.target.value)}>
+                <option value="any">🎲 Any (random mix)</option>
+                <option value="movie">🎬 Movies only</option>
+                <option value="series">📺 TV Series only</option>
+                <option value="show">📡 TV Shows only</option>
+              </select>
+            </label>
+            <label className="grow">
+              Franchise name (optional)
+              <input
+                type="text"
+                placeholder="e.g. Star Wars, Marvel, Fast & Furious"
+                value={franchiseName}
+                onChange={(e) => setFranchiseName(e.target.value)}
+                list="franchise-list"
+              />
+              <datalist id="franchise-list">
+                {existingFranchises.map(f => <option key={f} value={f} />)}
+              </datalist>
+            </label>
+          </div>
+          <div className="form-row" style={{ marginTop: 6 }}>
+            <label className="grow">
+              Custom label / studio name
+              <input
+                type="text"
+                placeholder="e.g. Marvel Studios, Pixar, A24"
+                value={customLabel}
+                onChange={(e) => setCustomLabel(e.target.value)}
+              />
+            </label>
+            <label className="check" style={{ minWidth: 120 }}>
+              <input type="checkbox" checked={sequelsOnly} onChange={(e) => setSequelsOnly(e.target.checked)} />
+              Sequels only
+            </label>
+          </div>
+          <div style={{ marginTop: 6, fontSize: 10, color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}>
+            {!franchiseName && !customLabel && '🎲 Manager will create original content each time'}
+            {franchiseName && !customLabel && `🔁 Building "${franchiseName}" franchise — Part ${1 + (managers.length % 6)}`}
+            {customLabel && !franchiseName && `🏷️ Everything will be branded "${customLabel}"`}
+            {customLabel && franchiseName && `🏷️ "${customLabel}" — "${franchiseName}" franchise`}
+            {sequelsOnly && franchiseName && ' · sequels only (no new IPs)'}
+          </div>
+        </div>
         <div className="btn-row">
           <Btn kind="primary" onClick={hire}>
-            Hire manager — {fmtMoney(salary)}/week
+            Hire {customLabel ? customLabel : 'manager'} — {fmtMoney(salary)}/week
           </Btn>
         </div>
         {managers.length > 0 && (
@@ -124,8 +187,33 @@ export function Managers({ state, apply }: { state: GameState; apply: (fn: (s: G
                   {!m.active && <span className="dist-badge">PAUSED</span>}
                 </div>
                 <div className="item-sub">
-                  {fmtMoney(m.weeklySalary)}/week · {m.genre ?? 'Any genre'} · quality target {m.qualityTarget} · max{' '}
-                  {fmtMoney(m.maxBudget)} · {m.marketingStrategy} marketing · {m.moviesMade} movie{m.moviesMade === 1 ? '' : 's'} made
+                  {fmtMoney(m.weeklySalary)}/week · {m.genre ?? 'Any genre'} · quality {m.qualityTarget} · max {fmtMoney(m.maxBudget)} · {m.marketingStrategy} marketing
+                </div>
+                <div style={{ display: 'flex', gap: 6, marginTop: 3, alignItems: 'center' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-data)', color: m.mood >= 85 ? 'var(--green-bright)' : m.mood >= 65 ? 'var(--gold)' : m.mood >= 45 ? 'var(--ink-muted)' : 'var(--red-soft)' }}>
+                    {m.mood >= 85 ? '🔥 THRILLED' : m.mood >= 65 ? '😊 Happy' : m.mood >= 45 ? '😐 Okay' : '😤 Unhappy'} ({m.mood}/100)
+                  </span>
+                  <span style={{ fontSize: 9, color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}>
+                    ~{m.mood >= 85 ? '100+' : m.mood >= 65 ? '50' : m.mood >= 45 ? '25' : '12'} per year
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 3 }}>
+                  <span style={{ fontSize: 9, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)' }}>
+                    {m.contentType === 'any' ? '🎲 Any' : m.contentType === 'movie' ? '🎬 Movies' : m.contentType === 'series' ? '📺 Series' : '📡 Shows'}
+                  </span>
+                  {m.franchiseName && (
+                    <span style={{ fontSize: 9, background: 'var(--gold-bg)', border: '1px solid var(--gold-border)', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)', color: 'var(--gold)' }}>
+                      🔁 {m.franchiseName}{m.sequelsOnly ? ' (sequels only)' : ''}
+                    </span>
+                  )}
+                  {m.customLabel && (
+                    <span style={{ fontSize: 9, background: 'var(--blue-bg)', border: '1px solid rgba(74,124,201,0.3)', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)', color: 'var(--blue-bright)' }}>
+                      🏷️ {m.customLabel}
+                    </span>
+                  )}
+                  <span style={{ fontSize: 9, color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}>
+                    {m.moviesMade} made
+                  </span>
                 </div>
               </div>
               <div className="row-actions">

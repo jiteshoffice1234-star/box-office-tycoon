@@ -30,8 +30,21 @@ export function loadGame(): GameState | null {
     if (!Array.isArray(parsed.investments)) parsed.investments = []
     // migrate saves without hired managers
     if (!Array.isArray(parsed.managers)) parsed.managers = []
+    // migrate manager content control fields
+    for (const mgr of parsed.managers) {
+      if (typeof mgr.contentType !== 'string') mgr.contentType = 'any'
+      if (typeof mgr.franchiseName !== 'string' && mgr.franchiseName !== null) mgr.franchiseName = null
+      if (typeof mgr.customLabel !== 'string' && mgr.customLabel !== null) mgr.customLabel = null
+      if (typeof mgr.sequelsOnly !== 'boolean') mgr.sequelsOnly = false
+      if (typeof mgr.mood !== 'number') mgr.mood = 50
+      if (typeof mgr.cooldownUntil !== 'number') mgr.cooldownUntil = 0
+    }
     if (typeof parsed.nextManagerIdx !== 'number') parsed.nextManagerIdx = 0
     if (!Array.isArray(parsed.managerProductions)) parsed.managerProductions = []
+    if (!Array.isArray(parsed.managerShows)) parsed.managerShows = []
+    if (typeof parsed.playerCreditScore !== 'number') parsed.playerCreditScore = 50
+    if (typeof parsed.loansRepaid !== 'number') parsed.loansRepaid = 0
+    if (typeof parsed.loansDefaulted !== 'number') parsed.loansDefaulted = 0
     if (parsed.production && typeof (parsed.production as { managerId?: unknown }).managerId !== 'string') {
       ;(parsed.production as { managerId: string | null }).managerId = null
     }
@@ -43,36 +56,77 @@ export function loadGame(): GameState | null {
     if (typeof parsed.stats.seriesMade !== 'number') parsed.stats.seriesMade = 0
     if (typeof parsed.stats.franchises !== 'number') parsed.stats.franchises = 0
     // migrate new feature fields
-    if (!Array.isArray(parsed.stats.boxOfficeRecords)) parsed.stats.boxOfficeRecords = []
-    if (!Array.isArray(parsed.stats.achievements)) parsed.stats.achievements = []
     if (typeof parsed.stats.streamingReleases !== 'number') parsed.stats.streamingReleases = 0
-    if (typeof parsed.stats.awardsCampaigns !== 'number') parsed.stats.awardsCampaigns = 0
-    if (typeof parsed.stats.merchandiseEarned !== 'number') parsed.stats.merchandiseEarned = 0
-    if (typeof parsed.stats.soundtrackEarned !== 'number') parsed.stats.soundtrackEarned = 0
-    if (typeof parsed.stats.commentaryAdded !== 'number') parsed.stats.commentaryAdded = 0
     if (typeof parsed.stats.internationalDeals !== 'number') parsed.stats.internationalDeals = 0
-    if (typeof parsed.stats.totalMerchandise !== 'number') parsed.stats.totalMerchandise = 0
-    if (typeof parsed.stats.totalSoundtrack !== 'number') parsed.stats.totalSoundtrack = 0
     if (!Array.isArray(parsed.randomEvents)) parsed.randomEvents = []
     if (parsed.activeEvent === undefined) parsed.activeEvent = null
     if (!Array.isArray(parsed.genreTrends)) parsed.genreTrends = []
-    if (!Array.isArray(parsed.awardsCampaigns)) parsed.awardsCampaigns = []
     if (!Array.isArray(parsed.talentRivalries)) parsed.talentRivalries = []
-    if (!Array.isArray(parsed.merchandiseDeals)) parsed.merchandiseDeals = []
-    if (!Array.isArray(parsed.directorCommentaries)) parsed.directorCommentaries = []
     if (typeof parsed.streamingPlatform !== 'boolean') parsed.streamingPlatform = false
+    if (!parsed.myStreamingPlatform) parsed.myStreamingPlatform = { name: 'My Streaming', active: false, subscriptionPrice: 9.99, subscribers: 0, maxSubscribers: 0, totalRevenue: 0, contentLibrary: [], weeklyRevenue: 0, adTierEnabled: false, freeViewers: 0, maxFreeViewers: 0, adsPerMovie: 6, adRevenuePerAd: 0.05, weeklyAdRevenue: 0, totalAdRevenue: 0, adsShownLastWeek: 0, adFreePrice: 10, adFreeSubscribers: 0, totalSubRevenue: 0, adDeals: [], adRateCard: 1, autoRelease: true, autoReleaseDelay: 15 }
+    // migrate ad-tier fields
+    if (typeof parsed.myStreamingPlatform.adTierEnabled !== 'boolean') parsed.myStreamingPlatform.adTierEnabled = false
+    if (typeof parsed.myStreamingPlatform.freeViewers !== 'number') parsed.myStreamingPlatform.freeViewers = 0
+    if (typeof parsed.myStreamingPlatform.maxFreeViewers !== 'number') parsed.myStreamingPlatform.maxFreeViewers = 0
+    if (typeof parsed.myStreamingPlatform.adsPerMovie !== 'number') parsed.myStreamingPlatform.adsPerMovie = 6
+    if (typeof parsed.myStreamingPlatform.adRevenuePerAd !== 'number') parsed.myStreamingPlatform.adRevenuePerAd = 0.05
+    if (typeof parsed.myStreamingPlatform.weeklyAdRevenue !== 'number') parsed.myStreamingPlatform.weeklyAdRevenue = 0
+    if (typeof parsed.myStreamingPlatform.totalAdRevenue !== 'number') parsed.myStreamingPlatform.totalAdRevenue = 0
+    if (typeof parsed.myStreamingPlatform.adsShownLastWeek !== 'number') parsed.myStreamingPlatform.adsShownLastWeek = 0
+    if (typeof parsed.myStreamingPlatform.adFreePrice !== 'number') parsed.myStreamingPlatform.adFreePrice = 10
+    if (typeof parsed.myStreamingPlatform.adFreeSubscribers !== 'number') parsed.myStreamingPlatform.adFreeSubscribers = 0
+    if (typeof parsed.myStreamingPlatform.totalSubRevenue !== 'number') parsed.myStreamingPlatform.totalSubRevenue = 0
+    if (!Array.isArray(parsed.myStreamingPlatform.adDeals)) parsed.myStreamingPlatform.adDeals = []
+    else {
+      const seenIds = new Set<string>()
+      const seenPendingIds = new Set<string>()
+      parsed.myStreamingPlatform.adDeals = parsed.myStreamingPlatform.adDeals.filter((d: { company?: string; id?: string; weeksRemaining?: number; movieId?: string | null; movieTitle?: string | null }) => {
+        if (!d || typeof d !== 'object') return false
+        const did = d.id ?? ''
+        // migrate new fields
+        if (d.movieId === undefined) d.movieId = null
+        if (d.movieTitle === undefined) d.movieTitle = null
+        // dedupe by id only (same company can have multiple deals on different movies)
+        if (seenIds.has(did)) return false
+        seenIds.add(did)
+        // cap pending at 8
+        if (d.weeksRemaining === 0) {
+          if (seenPendingIds.has(did) || seenPendingIds.size >= 8) return false
+          seenPendingIds.add(did)
+        }
+        return true
+      })
+    }
+    if (typeof parsed.myStreamingPlatform.adRateCard !== 'number') parsed.myStreamingPlatform.adRateCard = 1
+    // Migrate old short-term deals to 30-year contracts
+    for (const d of parsed.myStreamingPlatform.adDeals) {
+      if (d.weeksRemaining > 0 && d.weeksRemaining < 1560) {
+        d.weeksRemaining = 1560 // extend to 30 years
+      }
+      if (d.movieId === undefined) d.movieId = null
+      if (d.movieTitle === undefined) d.movieTitle = null
+    }
+    if (typeof parsed.myStreamingPlatform.autoRelease !== 'boolean') parsed.myStreamingPlatform.autoRelease = true
+    if (typeof parsed.myStreamingPlatform.autoReleaseDelay !== 'number') parsed.myStreamingPlatform.autoReleaseDelay = 15
+    // Ensure active flag is correct: if platform was launched (streamingPlatform=true) OR has content, activate it
+    if (parsed.streamingPlatform || parsed.myStreamingPlatform.contentLibrary?.length > 0 || parsed.myStreamingPlatform.subscribers > 0) {
+      parsed.myStreamingPlatform.active = true
+      parsed.streamingPlatform = true
+    }
+    // Ensure subscribers maxSubscribers is sane
+    if (parsed.myStreamingPlatform.maxSubscribers < 1000 && parsed.myStreamingPlatform.contentLibrary?.length > 0) {
+      parsed.myStreamingPlatform.maxSubscribers = Math.max(parsed.myStreamingPlatform.maxSubscribers, parsed.myStreamingPlatform.contentLibrary.length * 1000)
+    }
+    // Clamp subscription price to reasonable range
+    if (typeof parsed.myStreamingPlatform.subscriptionPrice === 'number') {
+      parsed.myStreamingPlatform.subscriptionPrice = Math.max(1, Math.min(50, parsed.myStreamingPlatform.subscriptionPrice))
+    }
     if (typeof parsed.internationalMarkets !== 'boolean') parsed.internationalMarkets = false
     if (typeof parsed.lastEventWeek !== 'number') parsed.lastEventWeek = 0
     // migrate movies with new fields
     for (const m of [...parsed.movies, ...parsed.aiMovies]) {
       if (!m.releaseWindow) m.releaseWindow = 'theatrical'
       if (typeof m.streamingRevenue !== 'number') m.streamingRevenue = 0
-      if (typeof m.merchandiseRevenue !== 'number') m.merchandiseRevenue = 0
-      if (typeof m.soundtrackRevenue !== 'number') m.soundtrackRevenue = 0
-      if (typeof m.commentaryActive !== 'boolean') m.commentaryActive = false
-      if (typeof m.awardsCampaignActive !== 'boolean') m.awardsCampaignActive = false
-      if (typeof m.awardsBuzz !== 'number') m.awardsBuzz = 0
-      if (typeof m.hasMerchandise !== 'boolean') m.hasMerchandise = false
       if (typeof m.internationalDeal !== 'boolean') m.internationalDeal = false
     }
     // migrate talents with new fields

@@ -3,22 +3,27 @@ import { genreMeta } from '../game/data'
 import type { Genre } from '../game/types'
 
 const MONEY_UNITS: [number, string][] = [
-  [1e27, 'Oc'], // octillion
-  [1e24, 'Se'], // septillion
-  [1e21, 'Sp'], // sextillion
-  [1e18, 'Sx'], // quintillion
-  [1e15, 'Q'], // quadrillion
-  [1e12, 'T'], // trillion
+  [1e27, 'Oc'],
+  [1e24, 'Se'],
+  [1e21, 'Sp'],
+  [1e18, 'Sx'],
+  [1e15, 'Q'],
+  [1e12, 'T'],
   [1e9, 'B'],
   [1e6, 'M'],
-  [1e4, 'K'],
+  [1e3, 'K'],
 ]
 
 export function fmtMoney(v: number): string {
   const sign = v < 0 ? '-' : ''
   const a = Math.abs(v)
   for (const [th, suf] of MONEY_UNITS) {
-    if (a >= th) return `${sign}$${(a / th).toFixed(2)}${suf}`
+    if (a >= th) {
+      const val = a / th
+      // Show 1 decimal for small numbers, 2 for large
+      const decimals = val < 10 ? 2 : val < 100 ? 1 : 0
+      return `${sign}$${val.toFixed(decimals)}${suf}`
+    }
   }
   return `${sign}$${Math.round(a).toLocaleString('en-US')}`
 }
@@ -62,9 +67,10 @@ export function Btn({
 
 export function Bar({ value, max = 100, color }: { value: number; max?: number; color?: string }) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100))
+  // GPU-only motion: scaleX transform instead of width (no layout thrash)
   return (
     <div className="bar">
-      <div className="bar-fill" style={{ width: `${pct}%`, background: color ?? 'var(--yellow)' }} />
+      <div className="bar-fill" style={{ transform: `scaleX(${pct / 100})`, background: color ?? 'var(--red)' }} />
     </div>
   )
 }

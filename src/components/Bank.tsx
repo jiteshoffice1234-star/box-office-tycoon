@@ -112,21 +112,24 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
 
       <Card title="Invest in other studios" right={<span className="muted">Stake a rival's upcoming movie</span>}>
         <p className="muted small">
-          Put cash into another studio's upcoming movie and earn a share of its box office for the whole run. Up to{' '}
-          {Math.round(INVEST_MAX_SHARE * 100)}% of their budget.
+          Back a rival's movie and earn a share of their box office. You own up to{' '}
+          {Math.round(INVEST_MAX_SHARE * 100)}% of the film — bigger budget = bigger potential payout.
         </p>
 
-        {/* Investment Stats */}
+        {/* Investment Stats Bar */}
         {investments.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
-            <span style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 4, padding: '3px 6px', fontSize: 10, fontFamily: 'var(--font-data)' }}>
-              Invested: <strong>{fmtMoney(totalInvested)}</strong>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+            <span style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontFamily: 'var(--font-data)', flex: 1, minWidth: 100 }}>
+              <span style={{ color: 'var(--ink-muted)', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' }}>Total Invested</span><br/>
+              <strong style={{ fontSize: 14 }}>{fmtMoney(totalInvested)}</strong>
             </span>
-            <span style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 4, padding: '3px 6px', fontSize: 10, fontFamily: 'var(--font-data)' }}>
-              Returned: <strong style={{ color: totalProfit >= 0 ? 'var(--green-bright)' : 'var(--red-soft)' }}>{fmtMoney(totalReturned)}</strong>
+            <span style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontFamily: 'var(--font-data)', flex: 1, minWidth: 100 }}>
+              <span style={{ color: 'var(--ink-muted)', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' }}>Returned</span><br/>
+              <strong style={{ fontSize: 14, color: 'var(--green-bright)' }}>{fmtMoney(totalReturned)}</strong>
             </span>
-            <span style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 4, padding: '3px 6px', fontSize: 10, fontFamily: 'var(--font-data)' }}>
-              Profit: <strong style={{ color: totalProfit >= 0 ? 'var(--green-bright)' : 'var(--red-soft)' }}>{totalProfit >= 0 ? '+' : ''}{fmtMoney(totalProfit)}</strong>
+            <span style={{ background: totalProfit >= 0 ? 'var(--green-bg)' : 'var(--red-bg)', border: '1px solid ' + (totalProfit >= 0 ? 'var(--green)' : 'var(--red)'), borderRadius: 6, padding: '6px 10px', fontSize: 11, fontFamily: 'var(--font-data)', flex: 1, minWidth: 100 }}>
+              <span style={{ color: 'var(--ink-muted)', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' }}>Profit/Loss</span><br/>
+              <strong style={{ fontSize: 14, color: totalProfit >= 0 ? 'var(--green-bright)' : 'var(--red-soft)' }}>{totalProfit >= 0 ? '+' : ''}{fmtMoney(totalProfit)}</strong>
             </span>
           </div>
         )}
@@ -143,8 +146,12 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
                   <div className="item-sub">
                     <GenreBadge g={a.genre} /> · budget {fmtMoney(a.budget)} · opens in {a.nextReleaseWeek - state.week}w
                   </div>
-                  <div className="item-sub" style={{ color: 'var(--gold)', fontWeight: 700 }}>
-                    Up to {fmtMoney(max)} investment · {(INVEST_MAX_SHARE * 100).toFixed(0)}% stake
+                  <div className="item-sub" style={{ color: 'var(--ink-soft)', marginTop: 2 }}>
+                    🎬 {a.genre} · {a.nextReleaseWeek - state.week}w to release
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 4, fontSize: 10, fontFamily: 'var(--font-data)' }}>
+                    <span style={{ color: 'var(--gold)' }}>💰 Max stake: {fmtMoney(max)}</span>
+                    <span style={{ color: 'var(--ink-muted)' }}>· {(INVEST_MAX_SHARE * 100).toFixed(0)}% of budget</span>
                   </div>
                 </div>
                 <div className="row-actions">
@@ -165,9 +172,9 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
         </div>
 
         {investTarget && (
-          <div style={{ marginTop: 12, padding: 10, background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 6 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-              Invest in {investTarget.name}
+          <div style={{ marginTop: 12, padding: 12, background: 'var(--bg-input)', border: '1px solid var(--gold-border)', borderRadius: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+              💰 Invest in {investTarget.name}
             </div>
             <div className="form-row">
               <label className="grow">
@@ -182,10 +189,23 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
                 />
               </label>
             </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 6, fontSize: 11, fontFamily: 'var(--font-data)', color: 'var(--ink-muted)' }}>
-              <span>Stake: <strong style={{ color: 'var(--ink)' }}>{investMax > 0 ? ((investAmount / investTarget.budget) * 100).toFixed(1) : 0}%</strong></span>
-              <span>·</span>
-              <span>Share of gross: <strong style={{ color: 'var(--green-bright)' }}>{investMax > 0 ? ((investAmount / investTarget.budget) * 100).toFixed(1) : 0}%</strong></span>
+            {/* Projected Returns */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 10 }}>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ fontSize: 9, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>Your Stake</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--gold)', fontFamily: 'var(--font-data)' }}>{investMax > 0 ? ((investAmount / investTarget.budget) * 100).toFixed(1) : 0}%</div>
+              </div>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ fontSize: 9, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>If Budget Hit</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--green-bright)', fontFamily: 'var(--font-data)' }}>~{fmtMoney(investAmount * 1.5)}</div>
+              </div>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ fontSize: 9, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>If Blockbuster</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--gold-bright)', fontFamily: 'var(--font-data)' }}>~{fmtMoney(investAmount * 4)}</div>
+              </div>
+            </div>
+            <div style={{ marginTop: 8, fontSize: 10, color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}>
+              You earn {(investAmount / investTarget.budget * 100).toFixed(1)}% of the film's total box office for its entire theatrical run.
             </div>
           </div>
         )}

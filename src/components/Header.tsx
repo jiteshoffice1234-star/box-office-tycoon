@@ -10,12 +10,16 @@ export function Header({
   onFastForward,
   onToggleAuto,
   onNewGame,
+  theme,
+  onToggleTheme,
 }: {
   state: GameState
   onNextWeek: () => void
   onFastForward: () => void
   onToggleAuto: () => void
   onNewGame: () => void
+  theme: 'light' | 'dark'
+  onToggleTheme: () => void
 }) {
   const d = dateInfo(state.week)
   const tier = tierForRep(state.reputation)
@@ -47,18 +51,21 @@ export function Header({
         <button className="btn btn-primary" onClick={onNextWeek}>
           Next Week ▶
         </button>
-        <button className="btn" onClick={onFastForward}>
+        <button className="btn btn-info" onClick={onFastForward}>
           Fast Forward ⏩
         </button>
         <button
-          className={`btn ${state.autoAdvance ? 'btn-primary' : ''}`}
+          className={`btn ${state.autoAdvance ? 'btn-success' : 'btn-ghost'}`}
           onClick={onToggleAuto}
           title="Automatically advance weeks until a decision is needed — marketing runs itself"
         >
           Auto {state.autoAdvance ? 'ON' : 'OFF'}
         </button>
-        <button className="btn btn-ghost" onClick={onNewGame} title="Start a new studio (current save is discarded)">
+        <button className="btn btn-danger" onClick={onNewGame} title="Start a new studio (current save is discarded)">
           New Game
+        </button>
+        <button className="btn btn-ghost theme-toggle" onClick={onToggleTheme} title="Switch light / dark (VYRA style)">
+          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
         </button>
       </div>
     </header>

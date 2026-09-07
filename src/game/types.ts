@@ -105,12 +105,6 @@ export interface Movie {
   cancelled: boolean // true if a series was cancelled due to low viewership
   releaseWindow: ReleaseWindow
   streamingRevenue: number
-  merchandiseRevenue: number
-  soundtrackRevenue: number
-  commentaryActive: boolean
-  awardsCampaignActive: boolean
-  awardsBuzz: number
-  hasMerchandise: boolean
   internationalDeal: boolean
 }
 
@@ -137,23 +131,17 @@ export interface Manager {
   active: boolean
   hiredWeek: number
   moviesMade: number
+  // --- Content control ---
+  contentType: 'movie' | 'series' | 'show' | 'any' // what they produce
+  franchiseName: string | null // assigned franchise (null = new IP each time)
+  customLabel: string | null // user-given label like "Marvel" or "Star Wars"
+  sequelsOnly: boolean // only make sequels in assigned franchise
+  // --- Mood system ---
+  mood: number // 0-100 satisfaction based on salary
+  cooldownUntil: number // week when manager can produce next
 }
 
-export interface AwardEntry {
-  movieId: string
-  title: string
-  genre: Genre
-  quality: number
-  owner: Owner
-  studioName: string
-  won: boolean
-}
 
-export interface AwardYear {
-  year: number
-  nominees: AwardEntry[]
-  winner: AwardEntry | null
-}
 
 export interface NewsItem {
   week: number
@@ -169,27 +157,22 @@ export interface AiStudio {
   genre: Genre
   aggression: number // 0-1, how aggressively they compete
   streaming: boolean // has a streaming platform
+  assets: number // studio value — transferred on default
+  creditScore: number // 0-100 — repayment reliability
+  totalBorrowed: number // lifetime loans received
+  defaults: number // times they defaulted
 }
 
 export interface GameStats {
   moviesMade: number
   totalEarned: number
   totalSpent: number
-  awardsWon: number
   blockbusters: number // gross >= $100M
   disasters: number // movies that bombed
   seriesMade: number
   franchises: number
-  boxOfficeRecords: BoxOfficeRecord[]
-  achievements: Achievement[]
   streamingReleases: number
-  awardsCampaigns: number
-  merchandiseEarned: number
-  soundtrackEarned: number
-  commentaryAdded: number
   internationalDeals: number
-  totalMerchandise: number
-  totalSoundtrack: number
 }
 
 export type LoanFrequency = 'daily' | 'weekly' | 'monthly'
@@ -227,11 +210,68 @@ export interface Investment {
 
 
 
+
+// --- My Streaming Platform ---
+export interface StreamingPlatform {
+  name: string
+  active: boolean
+  subscriptionPrice: number
+  subscribers: number
+  maxSubscribers: number
+  totalRevenue: number
+  contentLibrary: StreamingContent[]
+  weeklyRevenue: number
+  // --- Ad-supported free tier ---
+  adTierEnabled: boolean        // free viewers can watch with ads
+  freeViewers: number           // ad-supported audience (huge, grows faster than subs)
+  maxFreeViewers: number        // ceiling driven by library size/quality
+  adsPerMovie: number           // how many ad breaks you force per movie (user controls)
+  adRevenuePerAd: number        // $ per ad view (set by advertiser deals)
+  weeklyAdRevenue: number       // cash earned from ads last week
+  totalAdRevenue: number        // lifetime ad income
+  adsShownLastWeek: number      // total ad views served last week
+  // --- Ad-free subscription tier ---
+  adFreePrice: number           // $/week to skip ads (default $10)
+  adFreeSubscribers: number     // people paying to skip ads
+  totalSubRevenue: number       // lifetime ad-free subscription income
+  // --- Advertiser deals ---
+  adDeals: AdvertiserDeal[]     // companies paying to advertise
+  adRateCard: number            // your CPM rate multiplier (1 = standard)
+  // --- Auto-release pipeline ---
+  autoRelease: boolean          // titles arrive on the platform automatically
+  autoReleaseDelay: number      // weeks after theatrical release before auto-adding
+}
+
+export interface StreamingContent {
+  movieId: string
+  title: string
+  genre: Genre
+  quality: number
+  contentType: 'movie' | 'series' | 'show'
+  seasons: number
+  addedWeek: number
+  viewsPerWeek: number
+  subscriberDraw: number
+}
+
+// --- Advertiser deals: companies pay you to show ads to your free viewers ---
+export interface AdvertiserDeal {
+  id: string
+  company: string
+  weeklyPayment: number         // cash they pay every week
+  cpmBonus: number              // adds to adRevenuePerAd while active
+  minViewers: number            // contract requirement: free viewers must stay above this
+  weeksRemaining: number
+  breached: boolean             // viewers dropped below minViewers
+  movieId: string | null        // which movie/show the ads run on (null = any)
+  movieTitle: string | null     // display name of the assigned content
+}
+
 // --- Random Events ---
 export interface RandomEvent {
   id: string
   week: number
-  type: 'scandal' | 'viral' | 'weather' | 'strike' | 'pandemic' | 'award_buzz' | 'leak' | 'rival_release' | 'streaming_war' | 'talent_feud'
+  type: 'scandal' | 'viral' | 'weather' | 'strike' | 'pandemic' | 'leak' | 'rival_release' | 'streaming_war' | 'talent_feud'
   title: string
   description: string
   effect: 'positive' | 'negative' | 'neutral'
@@ -243,15 +283,6 @@ export interface RandomEvent {
 // --- Streaming Platform ---
 export type ReleaseWindow = 'theatrical' | 'streaming' | 'simultaneous'
 
-// --- Awards Campaign ---
-export interface AwardsCampaign {
-  movieId: string
-  spendPerWeek: number
-  active: boolean
-  weeksRunning: number
-  totalSpent: number
-  buzz: number // 0-100, awards buzz generated
-}
 
 // --- Talent Rivalries ---
 export interface TalentRivalry {
@@ -262,35 +293,8 @@ export interface TalentRivalry {
   active: boolean
 }
 
-// --- Box Office Records ---
-export interface BoxOfficeRecord {
-  category: string // 'opening_weekend', 'total_gross', 'longest_run', 'biggest_profit'
-  movieId: string
-  title: string
-  value: number
-  week: number
-  year: number
-}
 
-// --- Achievements ---
-export interface Achievement {
-  id: string
-  name: string
-  description: string
-  icon: string
-  unlocked: boolean
-  unlockedWeek: number | null
-  condition: string // human-readable condition
-}
 
-// --- Merchandise & IP ---
-export interface MerchandiseDeal {
-  movieId: string
-  type: 'toys' | 'theme_park' | 'clothing' | 'video_game' | 'book'
-  revenuePerWeek: number
-  active: boolean
-  weeksRemaining: number
-}
 
 // --- Genre Trends ---
 export interface GenreTrend {
@@ -299,26 +303,14 @@ export interface GenreTrend {
   weeksRemaining: number
 }
 
-// --- Director Commentary ---
-export interface DirectorCommentary {
-  movieId: string
-  cost: number
-  qualityBoost: number
-  evergreenBoost: number // multiplier for evergreen earnings
-  active: boolean
-}
 
 // Extend GameStats
 export interface GameStatsExtended extends GameStats {
-  boxOfficeRecords: BoxOfficeRecord[]
-  achievements: Achievement[]
   streamingReleases: number
-  awardsCampaigns: number
   merchandiseEarned: number
   soundtrackEarned: number
   commentaryAdded: number
   internationalDeals: number
-  totalMerchandise: number
   totalSoundtrack: number
 }
 
@@ -327,12 +319,28 @@ export interface MovieExtended extends Movie {
   releaseWindow: ReleaseWindow
   streamingRevenue: number
   merchandiseRevenue: number
-  soundtrackRevenue: number
-  commentaryActive: boolean
-  awardsCampaignActive: boolean
-  awardsBuzz: number
   hasMerchandise: boolean
   internationalDeal: boolean
+}
+
+// --- Manager Shows: one show per manager, seasons added over time ---
+export interface ManagerShow {
+  id: string
+  managerId: string
+  title: string
+  genre: Genre
+  contentType: 'series' | 'show'
+  seasons: ManagerSeason[]
+  totalEarnings: number
+}
+
+export interface ManagerSeason {
+  seasonNumber: number
+  quality: number
+  episodes: number
+  releaseWeek: number
+  totalGross: number
+  status: 'earning' | 'completed'
 }
 
 export interface GameState {
@@ -348,8 +356,6 @@ export interface GameState {
   movies: Movie[] // all player-owned movies (incl. distributed), chronological
   aiMovies: Movie[]
   aiStudios: AiStudio[]
-  awards: AwardYear[]
-  nextAwardYear: number
   log: NewsItem[]
   nextId: number
   autoAdvance: boolean
@@ -361,16 +367,18 @@ export interface GameState {
   managers: Manager[]
   nextManagerIdx: number
   managerProductions: Production[]
+  managerShows: ManagerShow[]
+  playerCreditScore: number // 0-100 — based on loan repayment history
+  loansRepaid: number // total loans fully repaid
+  loansDefaulted: number // total loans defaulted
   createdAt: number
   // --- New feature state ---
   randomEvents: RandomEvent[]
   activeEvent: RandomEvent | null
   genreTrends: GenreTrend[]
-  awardsCampaigns: AwardsCampaign[]
   talentRivalries: TalentRivalry[]
-  merchandiseDeals: MerchandiseDeal[]
-  directorCommentaries: DirectorCommentary[]
   streamingPlatform: boolean
+  myStreamingPlatform: StreamingPlatform
   internationalMarkets: boolean
   lastEventWeek: number
 }

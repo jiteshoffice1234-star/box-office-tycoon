@@ -1,23 +1,13 @@
 import { useMemo, useState } from 'react'
 import type { DepartmentAlloc, GameState, Role, Talent } from '../game/types'
-import { castOf, dropCast, hireTalent, startProduction, tierForRep } from '../game/engine'
-import { deptBalance } from '../game/formulas'
+import { castOf, dropCast, hireTalent, startProduction } from '../game/engine'
 import { Btn, Card, FameStars, GenreBadge, fmtMoney } from './ui'
-
-const DEPTS: { key: keyof DepartmentAlloc; label: string }[] = [
-  { key: 'acting', label: 'Acting' },
-  { key: 'writing', label: 'Writing' },
-  { key: 'direction', label: 'Direction' },
-  { key: 'effects', label: 'Effects' },
-  { key: 'music', label: 'Music' },
-  { key: 'editing', label: 'Editing' },
-]
 
 export function Casting({ state, apply }: { state: GameState; apply: (fn: (s: GameState) => GameState) => void }) {
   const p = state.production
   const [role, setRole] = useState<Role>('actor')
   const [offers, setOffers] = useState<Record<string, number>>({})
-  const [depts, setDepts] = useState<DepartmentAlloc>({ acting: 0, writing: 0, direction: 0, effects: 0, music: 0, editing: 0 })
+  const [budget, setBudget] = useState(5_000_000)
 
   const pool = useMemo(
     () =>
@@ -31,24 +21,15 @@ export function Casting({ state, apply }: { state: GameState; apply: (fn: (s: Ga
     return (
       <div className="empty">
         <p>Nothing is in pre-production right now.</p>
-        <p className="muted">Write or buy a script, then put it into production to start casting.</p>
+        <p className="muted">Write a script, then put it into production to start casting.</p>
       </div>
     )
   }
 
   const m = p.movie
   const c = castOf(state, m)
-  const tier = tierForRep(state.reputation)
-  const budget = Object.values(depts).reduce((sum, v) => sum + v, 0)
   const ready = c.writer !== null && c.director !== null && c.actors.length > 0
-
-  const setDept = (key: keyof DepartmentAlloc, v: number) => setDepts((d) => ({ ...d, [key]: v }))
-
-  const balance = () => {
-    const target = Math.min(tier.maxBudget, Math.max(1_000_000, Math.floor(state.cash * 0.4)))
-    const per = Math.max(0, Math.floor(target / 6))
-    setDepts({ acting: per, writing: per, direction: per, effects: per, music: per, editing: per })
-  }
+  const actualBudget = Math.max(0, budget)
 
   return (
     <div className="grid">
@@ -123,51 +104,45 @@ export function Casting({ state, apply }: { state: GameState; apply: (fn: (s: Ga
         </div>
       </Card>
 
-      <Card
-        title="Production budget"
-        right={
-          <span className="muted">
-            Budget {fmtMoney(budget)} · max {fmtMoney(tier.maxBudget)}
-          </span>
-        }
-      >
-        <div className="dept-grid">
-          {DEPTS.map((d) => (
-            <label key={d.key} className="dept">
-              <span className="dept-name">
-                {d.label}: <b>{fmtMoney(depts[d.key])}</b>
-              </span>
-              <input
-                type="range"
-                min={0}
-                max={tier.maxBudget}
-                step={50_000}
-                value={depts[d.key]}
-                onChange={(e) => setDept(d.key, Number(e.target.value))}
-              />
-            </label>
-          ))}
+      <Card title="Production budget" right={<span className="muted">No limits — you're the boss</span>}>
+        <div style={{ marginBottom: 10 }}>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-soft)' }}>
+              Budget: <strong style={{ color: 'var(--gold)', fontSize: 16 }}>{fmtMoney(actualBudget)}</strong>
+            </span>
+            <input
+              type="range"
+              min={100_000}
+              max={Math.max(actualBudget, state.cash, 1_000_000)}
+              step={100_000}
+              value={actualBudget}
+              onChange={(e) => setBudget(Number(e.target.value))}
+            />
+          </label>
+          <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+            {[1, 5, 10, 50, 100, 500].map(m => (
+              <Btn key={m} small onClick={() => setBudget(m * 1_000_000)}>
+                {fmtMoney(m * 1_000_000)}
+              </Btn>
+            ))}
+            <Btn small onClick={() => setBudget(Math.floor(state.cash * 0.5))}>Half cash</Btn>
+            <Btn small onClick={() => setBudget(state.cash)}>All cash</Btn>
+          </div>
         </div>
         <div className="btn-row">
-          <Btn onClick={balance}>Balance evenly</Btn>
           <Btn
             kind="primary"
-            disabled={!ready || budget <= 0 || budget > tier.maxBudget || state.cash < budget}
+            disabled={!ready || actualBudget <= 0 || state.cash < actualBudget}
             onClick={() => {
+              const per = Math.floor(actualBudget / 6)
+              const depts: DepartmentAlloc = { acting: per, writing: per, direction: per, effects: per, music: per, editing: per }
               apply((s) => startProduction(s, depts))
-              setDepts({ acting: 0, writing: 0, direction: 0, effects: 0, music: 0, editing: 0 })
             }}
           >
-            Start production — {fmtMoney(budget)}
+            Start production — {fmtMoney(actualBudget)}
           </Btn>
         </div>
-        {state.cash < budget && <div className="hint">You don't have enough cash for this budget.</div>}
-        {budget > tier.maxBudget && <div className="hint">Your {tier.name} tier caps budgets at {fmtMoney(tier.maxBudget)}.</div>}
-        {ready && budget > 0 && (
-          <div className="hint">
-            Balance score: {Math.round(deptBalance(depts) * 100)}% — balanced funding across departments boosts quality.
-          </div>
-        )}
+        {state.cash < actualBudget && <div className="hint">You don't have enough cash for this budget.</div>}
       </Card>
     </div>
   )

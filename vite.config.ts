@@ -11,7 +11,7 @@ const preloadFonts = {
     if (!ctx.bundle) return
     const tags = Object.values(ctx.bundle)
       .filter((c) => c.type === 'asset' && /\.woff2$/.test(c.fileName))
-      .filter((f) => /anton-latin-400|karla-latin-400/.test(f.fileName))
+      .filter((f) => /oswald-latin-400|inter-latin-400|jetbrains-mono-latin-400/.test(f.fileName))
       .map((f) => ({
         tag: 'link',
         attrs: {
@@ -20,7 +20,7 @@ const preloadFonts = {
           as: 'font',
           type: 'font/woff2',
           crossorigin: '',
-          ...(/anton/.test(f.fileName) ? { fetchpriority: 'high' } : {}),
+          ...(/oswald/.test(f.fileName) ? { fetchpriority: 'high' } : {}),
         },
         injectTo: 'head-prepend',
       }))

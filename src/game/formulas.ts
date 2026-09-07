@@ -79,29 +79,54 @@ export function megaHypeMultiplier(hype: number): number {
 
 /** Opening weekend domestic gross in dollars. */
 export function computeOpening(a: OpeningArgs): number {
-  const q = a.quality / 100
-  const genre = genreMeta(a.genre)
-  const qualityFactor = Math.pow(q, 2.1) * genre.mult
-  const draw = 0.85 + (a.avgActorFame / 100) * 0.65
+  const budget = a.productionBudget
+  const quality = a.quality
+
+  // --- Box office luck roll: realistic distribution per 10 movies ---
+  // 6 flops (earn ~cost, 0 profit), 2 losses (earn 10% of cost), 2 blockbusters (100x earners)
+  const roll = Math.random()
+  let luckMultiplier: number
+  if (roll < 0.05) {
+    // 5% DISASTER — earn almost nothing (quality < 30 helps trigger this)
+    luckMultiplier = rand(0.001, 0.01)
+  } else if (roll < 0.25) {
+    // 20% LOSS — earn ~10% of cost
+    luckMultiplier = rand(0.05, 0.15)
+  } else if (roll < 0.60) {
+    // 35% FLOP — earn ~70-110% of cost (break even, 0 profit)
+    luckMultiplier = rand(0.7, 1.1)
+  } else if (roll < 0.80) {
+    // 20% HIT — earn 3-8x cost
+    luckMultiplier = rand(3, 8)
+  } else if (roll < 0.95) {
+    // 15% BLOCKBUSTER — earn 15-50x cost
+    luckMultiplier = rand(15, 50)
+  } else {
+    // 5% MEGA HIT — earn 50-100x cost
+    luckMultiplier = rand(50, 100)
+  }
+
+  // Quality modifier: bad quality skews toward flops/losses, good quality toward hits
+  const qualityMod = quality < 30 ? rand(0.1, 0.3) : quality < 50 ? rand(0.3, 0.8) : quality < 70 ? rand(0.7, 1.3) : rand(1.0, 1.5)
+
+  // Hype modifier: low hype hurts, high hype helps
   const hypeM = (a.contentType === 'series' || a.contentType === 'show') ? megaHypeMultiplier(a.hype) : hypeMultiplier(a.hype)
-  const timing = timingMultiplier(a.genre, a.releaseWeek)
-  const comp = clamp(1 - 0.09 * a.sameWeekCompetition, 0.6, 1)
-  const spend = Math.pow(a.productionBudget, 0.72)
-  const rnd = rand(0.88, 1.12)
-  const raw = (
-    qualityFactor *
-    draw *
-    hypeM *
-    timing *
-    comp *
-    a.franchiseBonus *
-    spend *
-    76 *
-    rnd
-  )
-  // Cap opening at $1.5B (movies) / $3B (series/shows) to keep economy sane
-  const cap = (a.contentType === 'series' || a.contentType === 'show') ? 3_000_000_000 : 1_500_000_000
-  return Math.min(raw, cap)
+  const hypeMod = clamp(hypeM * 0.3, 0.3, 3)
+
+  // Franchise bonus
+  const franchiseMod = a.franchiseBonus
+
+  // Competition penalty
+  const comp = clamp(1 - 0.08 * a.sameWeekCompetition, 0.5, 1)
+
+  // Final calculation: luck × quality × hype × franchise × competition × budget
+  const raw = luckMultiplier * qualityMod * hypeMod * franchiseMod * comp * budget
+
+  // Floor: even the worst movie earns something
+  const opening = Math.max(budget * 0.001, raw)
+
+  // Cap at 100x budget (mega hits don't go beyond that)
+  return Math.min(opening, budget * 100)
 }
 
 // ~5 months in theaters (21 weeks of gross, then the run ends)
