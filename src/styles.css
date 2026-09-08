@@ -176,20 +176,22 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 13.5px;
-  line-height: 1.55;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-body);
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-::selection { background: var(--primary); color: var(--on-primary); }
+::selection { background: var(--color-primary); color: white; }
 
-/* One-shot entrance only — no infinite loops, GPU cheap */
-@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
 
 /* ============ APP SHELL ============ */
 .app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; animation: fadeUp 0.35s ease; }
