@@ -55,22 +55,22 @@ export function Marketing({ state, apply }: { state: GameState; apply: (fn: (s: 
     return (
       <div className="grid">
         <Card title="📡 Launch Your Streaming Platform" right={<span className="muted">Build your own Netflix</span>}>
-          <div style={{ marginBottom: 12, fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.6 }}>
+          <div style={{ marginBottom: 12, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
             Create your own streaming service. Release your movies and shows there for guaranteed weekly income.
             More content = more subscribers. Quality matters.
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
-            <div style={{ textAlign: 'center', padding: 10, background: 'var(--slate)', borderRadius: 8, border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--gold)' }}>100</div>
-              <div style={{ fontSize: 10, color: 'var(--ink-soft)' }}>Starting Subs</div>
+            <div style={{ textAlign: 'center', padding: 10, background: 'var(--color-surface-alt)', borderRadius: 8 }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-accent-dark)' }}>100</div>
+              <div style={{ fontSize: 10, color: 'var(--color-text-secondary)' }}>Starting Subs</div>
             </div>
-            <div style={{ textAlign: 'center', padding: 10, background: 'var(--slate)', borderRadius: 8, border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--green-bright)' }}>$9.99</div>
-              <div style={{ fontSize: 10, color: 'var(--ink-soft)' }}>/week per sub</div>
+            <div style={{ textAlign: 'center', padding: 10, background: 'var(--color-surface-alt)', borderRadius: 8 }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-success)' }}>$9.99</div>
+              <div style={{ fontSize: 10, color: 'var(--color-text-secondary)' }}>/week per sub</div>
             </div>
-            <div style={{ textAlign: 'center', padding: 10, background: 'var(--slate)', borderRadius: 8, border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--blue-bright)' }}>~$1K</div>
-              <div style={{ fontSize: 10, color: 'var(--ink-soft)' }}>Week 1 revenue</div>
+            <div style={{ textAlign: 'center', padding: 10, background: 'var(--color-surface-alt)', borderRadius: 8 }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-info)' }}>~$1K</div>
+              <div style={{ fontSize: 10, color: 'var(--color-text-secondary)' }}>Week 1 revenue</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
@@ -98,10 +98,10 @@ export function Marketing({ state, apply }: { state: GameState; apply: (fn: (s: 
       <Card title={`📡 ${platform.name}`} right={<span className={platform.active ? 'good' : 'bad'}>{platform.active ? '🟢 LIVE' : '🔴 OFF'}</span>}>
         {/* Key Metrics */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
-          <StatBox label="Subscribers" value={platform.subscribers.toLocaleString()} color="var(--gold)" />
-          <StatBox label="Weekly Revenue" value={fmtMoney(platform.weeklyRevenue)} color="var(--green-bright)" />
-          <StatBox label="Content" value={`${platform.contentLibrary.length} titles`} color="var(--blue-bright)" />
-          <StatBox label="Avg Quality" value={`${avgLibQuality}q`} color="var(--gold)" />
+          <StatBox label="Subscribers" value={platform.subscribers.toLocaleString()} color="var(--color-accent-dark)" />
+          <StatBox label="Weekly Revenue" value={fmtMoney(platform.weeklyRevenue)} color="var(--color-success)" />
+          <StatBox label="Content" value={`${platform.contentLibrary.length} titles`} color="var(--color-info)" />
+          <StatBox label="Avg Quality" value={`${avgLibQuality}q`} color="var(--color-accent-dark)" />
         </div>
 
         {/* Revenue Breakdown */}
@@ -113,7 +113,7 @@ export function Marketing({ state, apply }: { state: GameState; apply: (fn: (s: 
         </div>
 
         {/* Price Control */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '8px 0', borderTop: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '8px 0', borderTop: '1px solid var(--color-border)' }}>
           <span style={{ fontSize: 12, fontWeight: 700 }}>💰 Subscription Price:</span>
           <input
             type="number"
@@ -124,7 +124,7 @@ export function Marketing({ state, apply }: { state: GameState; apply: (fn: (s: 
             min={1}
             step={0.5}
           />
-          <span style={{ fontSize: 11, color: 'var(--ink-soft)' }}>/week per subscriber</span>
+          <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>/week per subscriber</span>
           <Btn small onClick={() => apply((s) => setPlatformPrice(s, platformPrice))}>Set Price</Btn>
         </div>
 
@@ -283,6 +283,7 @@ export function Marketing({ state, apply }: { state: GameState; apply: (fn: (s: 
                     </div>
                     <div className="item-sub">
                       {fmtMoney(d.weeklyPayment)}/week · +{d.cpmBonus.toFixed(2)} per-ad · requires {d.minViewers.toLocaleString()}+ viewers · 30 years
+                      {d.weeksRemaining < 0 && <span style={{ color: 'var(--red)', marginLeft: 6 }}>⏰ expires in {8 + d.weeksRemaining}w</span>}
                     </div>
                   </div>
                   <Btn small kind="primary" onClick={() => apply((s) => acceptAdDeal(s, d.id))}>
