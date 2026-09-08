@@ -601,7 +601,6 @@ input[type='range'] { accent-color: var(--color-primary); width: 100%; }
   .app-content { padding: 20px 24px 32px; }
   .stats-row { grid-template-columns: repeat(5, 1fr); }
   .stat-value { font-size: var(--font-size-2xl); }
-  .bottom-nav { display: none; }
   .header-controls { width: auto; margin-left: auto; }
   .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 12px; }
   .row.stats-row { display: grid; }
