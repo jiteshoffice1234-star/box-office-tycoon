@@ -70,7 +70,7 @@ export function Bar({ value, max = 100, color }: { value: number; max?: number; 
   // GPU-only motion: scaleX transform instead of width (no layout thrash)
   return (
     <div className="bar">
-      <div className="bar-fill" style={{ transform: `scaleX(${pct / 100})`, background: color ?? 'var(--red)' }} />
+      <div className="bar-fill" style={{ transform: `scaleX(${pct / 100})`, background: color ?? 'var(--color-primary)' }} />
     </div>
   )
 }
