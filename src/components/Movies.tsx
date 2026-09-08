@@ -137,11 +137,11 @@ function GroupRow({ group, apply }: { group: MovieGroup; state: GameState; apply
       <div className="row-item">
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="item-title">
-            {m.isDisaster && <span style={{ fontSize: 9, background: '#c0392b', color: '#fff', padding: '1px 4px', borderRadius: 3, marginRight: 4 }}>DISASTER</span>}
-            {m.phase === 'evergreen' && <span style={{ fontSize: 9, background: '#27ae60', color: '#fff', padding: '1px 4px', borderRadius: 3, marginRight: 4 }}>EVERGREEN</span>}
-            {m.franchiseName && <span style={{ fontSize: 9, background: 'var(--gold-bg)', border: '1px solid var(--gold-border)', color: 'var(--gold-bright)', padding: '1px 4px', borderRadius: 3, marginRight: 4 }}>Part {m.part}</span>}
+            {m.isDisaster && <span style={{ fontSize: 9, background: 'var(--color-danger)', color: '#fff', padding: '1px 4px', borderRadius: 3, marginRight: 4 }}>DISASTER</span>}
+            {m.phase === 'evergreen' && <span style={{ fontSize: 9, background: 'var(--color-success)', color: '#fff', padding: '1px 4px', borderRadius: 3, marginRight: 4 }}>EVERGREEN</span>}
+            {m.franchiseName && <span style={{ fontSize: 9, background: 'var(--gold-bg)', border: '1px solid var(--gold-border)', color: 'var(--color-accent-dark)', padding: '1px 4px', borderRadius: 3, marginRight: 4 }}>Part {m.part}</span>}
             {m.title}
-            {m.owner === 'distributed' && <span style={{ fontSize: 9, background: 'var(--blue-bg)', border: '1px solid rgba(74,140,212,0.3)', color: 'var(--blue-bright)', padding: '1px 4px', borderRadius: 3, marginLeft: 4 }}>DIST</span>}
+            {m.owner === 'distributed' && <span style={{ fontSize: 9, background: 'var(--blue-bg)', border: '1px solid rgba(100,181,246,0.3)', color: 'var(--color-info)', padding: '1px 4px', borderRadius: 3, marginLeft: 4 }}>DIST</span>}
           </div>
           <div className="item-sub">
             {owner === 'player' ? 'You' : m.studioName} · {dateInfo(m.releaseWeek).monthName} {dateInfo(m.releaseWeek).year}
@@ -149,8 +149,8 @@ function GroupRow({ group, apply }: { group: MovieGroup; state: GameState; apply
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
           <GenreBadge g={genre} />
-          <span style={{ fontFamily: 'var(--font-data)', fontSize: 10, color: 'var(--ink-soft)' }}>q{m.quality}</span>
-          <span style={{ fontFamily: 'var(--font-data)', fontSize: 11, fontWeight: 700, color: 'var(--gold)' }}>{fmtMoney(m.totalGross)}</span>
+          <span style={{ fontFamily: 'var(--font-data)', fontSize: 10, color: 'var(--color-text-secondary)' }}>q{m.quality}</span>
+          <span style={{ fontFamily: 'var(--font-data)', fontSize: 11, fontWeight: 700, color: 'var(--color-accent-dark)' }}>{fmtMoney(m.totalGross)}</span>
           {m.owner === 'player' && m.finished && m.part < 6 && m.totalGross >= m.cost * 2.5 && (
             <Btn small kind="primary" onClick={() => apply((s) => makeSequel(s, m.id))}>Sequel</Btn>
           )}
@@ -167,10 +167,10 @@ function GroupRow({ group, apply }: { group: MovieGroup; state: GameState; apply
     // Franchise group: multiple movies under same franchise
     const maxPart = Math.max(...items.map(x => x.part))
     return (
-      <div className="row-item" style={{ borderLeft: '3px solid var(--gold)' }}>
+      <div className="row-item" style={{ borderLeft: '3px solid var(--color-accent)' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="item-title">
-            <span style={{ fontSize: 9, background: 'var(--gold-bg)', border: '1px solid var(--gold-border)', color: 'var(--gold-bright)', padding: '1px 5px', borderRadius: 3, marginRight: 4 }}>
+            <span style={{ fontSize: 9, background: 'var(--gold-bg)', border: '1px solid var(--gold-border)', color: 'var(--color-accent-dark)', padding: '1px 5px', borderRadius: 3, marginRight: 4 }}>
               🎬 FRANCHISE · {maxPart} parts
             </span>
             {title}
@@ -180,10 +180,10 @@ function GroupRow({ group, apply }: { group: MovieGroup; state: GameState; apply
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-          <span style={{ fontFamily: 'var(--font-data)', fontSize: 10, color: 'var(--ink-muted)' }}>
+          <span style={{ fontFamily: 'var(--font-data)', fontSize: 10, color: 'var(--color-text-muted)' }}>
             Latest: Part {latest.part}
           </span>
-          <span style={{ fontFamily: 'var(--font-data)', fontSize: 11, fontWeight: 700, color: totalEarnings > 0 ? 'var(--gold)' : 'var(--ink-muted)' }}>
+          <span style={{ fontFamily: 'var(--font-data)', fontSize: 11, fontWeight: 700, color: totalEarnings > 0 ? 'var(--color-accent-dark)' : 'var(--color-text-muted)' }}>
             {fmtMoney(totalEarnings)}
           </span>
         </div>
@@ -197,10 +197,10 @@ function GroupRow({ group, apply }: { group: MovieGroup; state: GameState; apply
   const icon = type === 'series' ? '📺' : '📡'
 
   return (
-    <div className="row-item" style={{ borderLeft: `3px solid ${type === 'series' ? 'var(--blue)' : '#8b5cf6'}` }}>
+    <div className="row-item" style={{ borderLeft: `3px solid ${type === 'series' ? 'var(--color-info)' : 'var(--color-primary)'}` }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="item-title">
-          <span style={{ fontSize: 9, background: type === 'series' ? 'rgba(74,140,212,0.15)' : 'rgba(139,92,246,0.15)', border: `1px solid ${type === 'series' ? 'rgba(74,140,212,0.3)' : 'rgba(139,92,246,0.3)'}`, color: type === 'series' ? 'var(--blue-bright)' : '#a78bfa', padding: '1px 5px', borderRadius: 3, marginRight: 4 }}>
+          <span style={{ fontSize: 9, background: type === 'series' ? 'var(--blue-bg)' : 'rgba(255,107,107,0.12)', border: `1px solid ${type === 'series' ? 'rgba(100,181,246,0.3)' : 'rgba(255,107,107,0.3)'}`, color: type === 'series' ? 'var(--color-info)' : 'var(--color-primary)', padding: '1px 5px', borderRadius: 3, marginRight: 4 }}>
             {icon} {type.toUpperCase()}
           </span>
           {title}
@@ -210,10 +210,10 @@ function GroupRow({ group, apply }: { group: MovieGroup; state: GameState; apply
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-        <span style={{ fontFamily: 'var(--font-data)', fontSize: 10, color: 'var(--ink-muted)' }}>
+        <span style={{ fontFamily: 'var(--font-data)', fontSize: 10, color: 'var(--color-text-muted)' }}>
           Latest: S{latestSeason}
         </span>
-        <span style={{ fontFamily: 'var(--font-data)', fontSize: 11, fontWeight: 700, color: totalEarnings > 0 ? 'var(--gold)' : 'var(--ink-muted)' }}>
+        <span style={{ fontFamily: 'var(--font-data)', fontSize: 11, fontWeight: 700, color: totalEarnings > 0 ? 'var(--color-accent-dark)' : 'var(--color-text-muted)' }}>
           {fmtMoney(totalEarnings)}
         </span>
       </div>
