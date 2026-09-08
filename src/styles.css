@@ -387,36 +387,44 @@ html, body {
 .cell-title { font-weight: 700; font-size: 12px; }
 .cell-sub { font-size: 10px; color: var(--text-2); font-family: var(--font-data); }
 .cell-bar { height: 5px; margin-top: 5px; background: var(--surface-3); border-radius: 3px; overflow: hidden; }
-.you-dot { display: inline-block; width: 6px; height: 6px; background: var(--green); border-radius: 50%; margin-right: 5px; }
-.status { font-size: 10px; color: var(--text-2); font-family: var(--font-data); }
+.you-dot { display: inline-block; width: 6px; height: 6px; background: var(--color-success); border-radius: 50%; margin-right: 5px; }
+.status { font-size: 10px; color: var(--color-text-secondary); font-family: var(--font-data); }
 .list { display: grid; gap: 8px; content-visibility: auto; }
 .row-item, .talent-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  background: var(--surface-2); border: 1px solid var(--outline); border-radius: 14px; padding: 11px 14px;
+  background: var(--color-surface); border: none; border-radius: var(--radius-sm); padding: 12px 14px;
+  box-shadow: var(--shadow-sm);
 }
-.item-title { font-weight: 700; font-size: 13px; }
-.item-sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+.item-title { font-weight: var(--font-weight-semibold); font-size: var(--font-size-base); }
+.item-sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
 .row-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.price { font-weight: 800; color: var(--gold); font-variant-numeric: tabular-nums; font-size: 13px; }
+.price { font-weight: var(--font-weight-extrabold); color: var(--color-accent-dark); font-variant-numeric: tabular-nums; font-size: 13px; }
 
 /* ============ TALENT ============ */
 .talent-info { min-width: 0; flex: 1; }
 .talent-offer { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; min-width: 120px; }
 .offer-line { display: flex; align-items: center; gap: 8px; width: 100%; }
 .offer-line input[type='range'] { flex: 1; }
-.asking { font-size: 10px; color: var(--text-2); font-family: var(--font-data); }
-.stars { color: var(--amber); font-size: 11px; letter-spacing: 1px; }
-.stars-dim { color: var(--outline); }
-.affinity { font-size: 10px; color: var(--blue-bright); font-weight: 700; }
-.hired-label { color: var(--green-bright); font-weight: 700; font-size: 11px; }
+.asking { font-size: 10px; color: var(--color-text-secondary); font-family: var(--font-data); }
+.stars { color: var(--color-accent); font-size: 11px; letter-spacing: 1px; }
+.stars-dim { color: var(--color-border); }
+.affinity { font-size: 10px; color: var(--color-info); font-weight: var(--font-weight-semibold); }
+.hired-label { color: var(--color-success); font-weight: var(--font-weight-semibold); font-size: 11px; }
 .roster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.roster-slot { background: var(--surface-2); border: 1.5px dashed var(--outline); border-radius: var(--radius-sm); padding: 10px; min-height: 62px; position: relative; }
-.roster-slot.filled { border-style: solid; border-color: var(--green); background: var(--green-bg); }
-.roster-label { font-family: var(--font-data); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2); }
-.roster-name { font-weight: 700; font-size: 11px; margin-top: 3px; }
-.roster-sub { font-size: 10px; color: var(--text-2); }
-.roster-empty { color: var(--outline); font-size: 18px; margin-top: 4px; }
-.drop-btn { position: absolute; top: 5px; right: 5px; background: var(--red); border: none; color: #fff; cursor: pointer; font-size: 10px; width: 20px; height: 20px; border-radius: 50%; }
+.roster-slot {
+  background: var(--color-surface-alt);
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  min-height: 62px;
+  position: relative;
+}
+.roster-slot.filled { border-style: solid; border-color: var(--color-success); background: var(--green-bg); }
+.roster-label { font-family: var(--font-data); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-text-secondary); }
+.roster-name { font-weight: var(--font-weight-semibold); font-size: 11px; margin-top: 3px; }
+.roster-sub { font-size: 10px; color: var(--color-text-secondary); }
+.roster-empty { color: var(--color-border); font-size: 18px; margin-top: 4px; }
+.drop-btn { position: absolute; top: 5px; right: 5px; background: var(--color-danger); border: none; color: #fff; cursor: pointer; font-size: 10px; width: 20px; height: 20px; border-radius: 50%; }
 
 /* ============ FORMS — VYRA field ============ */
 .form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
