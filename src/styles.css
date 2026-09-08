@@ -249,22 +249,35 @@ html, body {
 .nav-item.on::after, .nav-item.active::after { content: ''; display: block; width: 4px; height: 4px; border-radius: 50%; background: var(--red); }
 .nav-dot { position: absolute; top: 8px; right: calc(50% - 14px); width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
 
-/* ============ BUTTONS — VYRA solid red/ghost ============ */
+/* ============ BUTTONS — Playful rounded style ============ */
 .btn {
-  font-family: var(--font-body); font-size: 13px; font-weight: 700;
-  border: 1px solid var(--outline); background: var(--surface-2); color: var(--text);
-  border-radius: var(--radius-sm); padding: 10px 16px; cursor: pointer; min-height: 40px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all var(--duration-fast) var(--easing);
 }
-.btn:hover:not(:disabled) { background: var(--surface-3); }
-.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn:hover:not(:disabled) { background: var(--color-surface-alt); box-shadow: var(--shadow-sm); }
+.btn:active:not(:disabled) { transform: scale(0.97); box-shadow: none; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); box-shadow: 0 6px 16px var(--red-soft); }
-.btn-primary:hover:not(:disabled) { background: var(--primary); filter: brightness(1.06); }
-.btn-success { background: var(--green); border-color: var(--green); color: #fff; }
-.btn-info { background: var(--surface-2); border-color: var(--outline); color: var(--text); }
-.btn-danger { background: transparent; border-color: var(--outline); color: var(--red); }
-.btn-ghost { background: transparent; border-color: var(--outline); color: var(--text-2); }
-.btn-sm { padding: 7px 12px; font-size: 12px; min-height: 32px; }
+.btn-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover:not(:disabled) { background: var(--color-primary-dark); box-shadow: var(--shadow-md); }
+.btn-success { background: var(--color-success); border-color: var(--color-success); color: white; }
+.btn-info { background: var(--color-surface); border-color: var(--color-border); color: var(--color-text); }
+.btn-danger { background: transparent; border-color: var(--color-border); color: var(--color-danger); }
+.btn-ghost { background: transparent; border-color: var(--color-border); color: var(--color-text-secondary); }
+.btn-sm { padding: 8px 14px; font-size: var(--font-size-sm); min-height: 36px; }
 .btn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
 
 /* ============ DECISION BANNER ============ */
