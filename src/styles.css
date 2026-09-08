@@ -288,19 +288,32 @@ html, body {
   color: var(--text); font-weight: 600; font-size: 13px;
 }
 
-/* ============ CARDS — VYRA 18px paper ============ */
+/* ============ CARDS — Shadow-based edges ============ */
 .grid { display: grid; gap: 12px; }
-.card { background: var(--surface); border: 1px solid var(--outline); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-sm); }
-.card-gold { border-color: var(--gold-border); background: var(--surface); }
-.card-alert { border-color: var(--red); }
+.card {
+  background: var(--color-surface);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-md);
+}
+.card-gold { box-shadow: var(--shadow-md), 0 0 0 1px var(--gold-border); }
+.card-alert { box-shadow: var(--shadow-md), 0 0 0 1px var(--color-danger); }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
 .card-title {
-  font-family: var(--font-data); font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--text-2); display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-data);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.card-title::before { content: ''; width: 16px; height: 2px; background: var(--red); flex-shrink: 0; }
+.card-title::before { content: ''; width: 16px; height: 2px; background: var(--color-primary); flex-shrink: 0; }
 .card-title .tick { display: none; }
-.card-right { color: var(--text-2); font-size: 10px; font-family: var(--font-data); }
+.card-right { color: var(--color-text-secondary); font-size: 10px; font-family: var(--font-data); }
 .row { display: flex; flex-direction: column; gap: 12px; }
 
 /* ============ STATS — VYRA 2-col tiles ============ */
