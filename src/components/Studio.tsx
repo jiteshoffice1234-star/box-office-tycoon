@@ -20,7 +20,7 @@ export function Studio({ state, go }: { state: GameState; go: (t: Tab) => void }
       <div className="row stats-row">
         <Stat label="Cash" value={fmtMoney(s.cash)} />
         <Stat label="Tier" value={tier.name} sub={nextTier ? `→ ${nextTier.name} at ${nextTier.minRep} rep` : '★ Max tier'} />
-        <Stat label="Reputation" value={`${Math.round(s.reputation)}/300`} sub={<Bar value={s.reputation} max={300} color="var(--gold)" />} />
+        <Stat label="Reputation" value={`${Math.round(s.reputation)}/300`} sub={<Bar value={s.reputation} max={300} color="var(--color-accent)" />} />
         <Stat label="Content" value={s.stats.moviesMade} sub={`${s.stats.blockbusters} 🔥 ${s.stats.disasters} 💀 ${s.stats.seriesMade} 📺`} />
         <Stat label="Total earned" value={fmtMoney(s.stats.totalEarned)} sub={`🔁 ${s.stats.franchises} franchise parts`} />
       </div>
@@ -85,22 +85,22 @@ export function Studio({ state, go }: { state: GameState; go: (t: Tab) => void }
               const totalSeasons = show.seasons.length
               const icon = show.contentType === 'series' ? '📺' : '📡'
               return (
-                <div key={show.id} className="row-item" style={{ borderLeft: '3px solid ' + (show.contentType === 'series' ? 'var(--blue)' : 'var(--purple)') }}>
+                <div key={show.id} className="row-item" style={{ borderLeft: '3px solid ' + (show.contentType === 'series' ? 'var(--color-info)' : 'var(--color-primary)') }}>
                   <div style={{ flex: 1 }}>
                     <div className="item-title">{icon} &ldquo;{show.title}&rdquo;</div>
                     <div className="item-sub">{mgr?.name ?? 'Manager'} · {show.genre} · {totalSeasons} season{totalSeasons === 1 ? '' : 's'}</div>
                       <div style={{ display: 'flex', gap: 6, marginTop: 4, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 9, background: 'var(--slate)', border: '1px solid var(--border)', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)' }}>
+                      <span style={{ fontSize: 9, background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)' }}>
                         Latest: S{show.seasons[show.seasons.length - 1]?.seasonNumber} · q{show.seasons[show.seasons.length - 1]?.quality} · {show.seasons[show.seasons.length - 1]?.episodes}ep
                       </span>
-                      <span style={{ fontSize: 9, color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}>
+                      <span style={{ fontSize: 9, color: 'var(--color-text-muted)', fontFamily: 'var(--font-data)' }}>
                         {totalSeasons} total seasons · {show.seasons.reduce((s, sn) => s + sn.episodes, 0)} episodes
                       </span>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div className="price">{fmtMoney(show.totalEarnings)}</div>
-                    <div style={{ fontSize: 9, color: 'var(--ink-muted)' }}>total earned</div>
+                    <div style={{ fontSize: 9, color: 'var(--color-text-muted)' }}>total earned</div>
                   </div>
                 </div>
               )
@@ -113,7 +113,7 @@ export function Studio({ state, go }: { state: GameState; go: (t: Tab) => void }
         <Card title="Genre Trends">
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {s.genreTrends.map((t, i) => (
-              <span key={i} style={{ background: t.multiplier > 1 ? 'rgba(92,196,128,0.12)' : 'rgba(224,85,85,0.12)', border: '1px solid ' + (t.multiplier > 1 ? '#4a9e6a' : '#c44040'), borderRadius: 4, padding: '2px 6px', fontSize: 11 }}>
+              <span key={i} style={{ background: t.multiplier > 1 ? 'rgba(76,175,80,0.12)' : 'rgba(255,107,107,0.12)', border: '1px solid ' + (t.multiplier > 1 ? 'var(--color-success)' : 'var(--color-danger)'), borderRadius: 4, padding: '2px 6px', fontSize: 11 }}>
                 {genreMeta(t.genre as any)?.emoji} {t.genre} {t.multiplier > 1 ? '↑' : '↓'} {t.multiplier.toFixed(1)}x ({t.weeksRemaining}w left)
               </span>
             ))}
@@ -124,15 +124,15 @@ export function Studio({ state, go }: { state: GameState; go: (t: Tab) => void }
       {s.streamingPlatform && (
         <Card title="📡 Streaming Platform">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 6, padding: '8px 10px' }}>
-              <div style={{ fontSize: 9, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>Revenue</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--green-bright)', fontFamily: 'var(--font-data)' }}>{fmtMoney(s.myStreamingPlatform.totalRevenue)}</div>
-              <div style={{ fontSize: 10, color: 'var(--ink-muted)' }}>{s.myStreamingPlatform.subscribers.toLocaleString()} subscribers</div>
+            <div style={{ background: 'var(--color-surface-alt)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '8px 10px' }}>
+              <div style={{ fontSize: 9, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>Revenue</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-success)', fontFamily: 'var(--font-data)' }}>{fmtMoney(s.myStreamingPlatform.totalRevenue)}</div>
+              <div style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>{s.myStreamingPlatform.subscribers.toLocaleString()} subscribers</div>
             </div>
-            <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 6, padding: '8px 10px' }}>
-              <div style={{ fontSize: 9, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>Library</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--blue-bright)', fontFamily: 'var(--font-data)' }}>{s.myStreamingPlatform.contentLibrary.length} titles</div>
-              <div style={{ fontSize: 10, color: 'var(--ink-muted)' }}>{fmtMoney(s.myStreamingPlatform.weeklyRevenue)}/week</div>
+            <div style={{ background: 'var(--color-surface-alt)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '8px 10px' }}>
+              <div style={{ fontSize: 9, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>Library</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-info)', fontFamily: 'var(--font-data)' }}>{s.myStreamingPlatform.contentLibrary.length} titles</div>
+              <div style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>{fmtMoney(s.myStreamingPlatform.weeklyRevenue)}/week</div>
             </div>
           </div>
         </Card>
