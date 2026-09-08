@@ -561,14 +561,50 @@ input[type='range'] { accent-color: var(--color-primary); width: 100%; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
+/* ============ RESPONSIVE POLISH ============ */
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .stat { padding: 10px; }
+  .stat-value { font-size: var(--font-size-xl); }
+  .card { padding: var(--space-3); }
+  .row-item, .talent-row { padding: 10px 12px; }
+  .header { padding: 10px 12px; }
+  .studio-name-chip { font-size: 12px; max-width: 140px; padding: 6px 10px; }
+  .tier-chip { font-size: 8px; padding: 4px 8px; }
+  .bottom-nav { min-height: 56px; }
+  .nav-item { font-size: 7px; padding: 6px 2px; }
+  .nav-item .nav-icon { font-size: 18px; }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+  .stats-row { grid-template-columns: repeat(3, 1fr); }
+  .stat-value { font-size: var(--font-size-xl); }
+}
+
 /* ============ DESKTOP ============ */
 @media (min-width: 768px) {
   .app-content { padding: 20px 24px 32px; }
   .stats-row { grid-template-columns: repeat(5, 1fr); }
-  .stat-value { font-size: var(--font-size-xl); }
+  .stat-value { font-size: var(--font-size-2xl); }
   .bottom-nav { display: none; }
   .header-controls { width: auto; margin-left: auto; }
   .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 12px; }
   .row.stats-row { display: grid; }
   .studio-name-chip { font-size: 16px; max-width: 260px; }
+  .card { padding: var(--space-6); }
+  .row-item, .talent-row { padding: 14px 16px; }
+}
+
+/* ============ FOCUS STATES ============ */
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 4px; }
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-surface-alt); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* ============ REDUCED MOTION ============ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
