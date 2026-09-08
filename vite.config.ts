@@ -6,12 +6,12 @@ const preloadFonts = {
   name: 'preload-critical-fonts',
   apply: 'build',
   // build-time ctx carries the output bundle, so we can preload the hashed
-  // woff2 URLs. Anton (the LCP marquee face) gets high fetch priority.
+  // woff2 URLs. Nunito (the primary body face) gets high fetch priority.
   transformIndexHtml(html, ctx) {
     if (!ctx.bundle) return
     const tags = Object.values(ctx.bundle)
       .filter((c) => c.type === 'asset' && /\.woff2$/.test(c.fileName))
-      .filter((f) => /oswald-latin-400|inter-latin-400|jetbrains-mono-latin-400/.test(f.fileName))
+      .filter((f) => /nunito-latin-400|jetbrains-mono-latin-400/.test(f.fileName))
       .map((f) => ({
         tag: 'link',
         attrs: {
@@ -20,7 +20,7 @@ const preloadFonts = {
           as: 'font',
           type: 'font/woff2',
           crossorigin: '',
-          ...(/oswald/.test(f.fileName) ? { fetchpriority: 'high' } : {}),
+          ...(/nunito/.test(f.fileName) ? { fetchpriority: 'high' } : {}),
         },
         injectTo: 'head-prepend',
       }))
