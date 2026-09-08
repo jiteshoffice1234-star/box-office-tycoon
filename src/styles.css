@@ -198,37 +198,38 @@ html, body {
 .app-content { flex: 1; padding: 16px 16px calc(var(--nav-height) + 24px); max-width: 860px; width: 100%; margin: 0 auto; }
 .app-content > main { display: flex; flex-direction: column; gap: 12px; }
 
-/* ============ HEADER — VYRA ledger voice ============ */
+/* ============ HEADER — Clean with shadow ============ */
 .header {
   position: sticky; top: 0; z-index: 100;
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   padding: 12px 16px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--outline);
+  background: var(--color-surface);
+  border-bottom: none;
+  box-shadow: var(--shadow-sm);
 }
 .header-studio { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .studio-name-chip {
-  background: var(--primary); color: var(--on-primary);
-  padding: 7px 14px; font-weight: 800; font-size: 14px; letter-spacing: -0.01em;
-  border-radius: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
+  background: var(--color-primary); color: white;
+  padding: 7px 14px; font-weight: var(--font-weight-extrabold); font-size: 14px; letter-spacing: -0.01em;
+  border-radius: var(--radius-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
 }
 .tier-chip {
-  font-family: var(--font-data); font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--text-2); border: 1px solid var(--outline); border-radius: 999px; padding: 5px 10px; background: var(--surface-2);
+  font-family: var(--font-data); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--color-text-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-full); padding: 5px 10px; background: var(--color-surface-alt);
 }
 .header-rep { min-width: 130px; max-width: 190px; flex: 1; }
-.rep-line { font-family: var(--font-data); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2); display: flex; justify-content: space-between; margin-bottom: 5px; }
-.rep-next { color: var(--text-2); }
+.rep-line { font-family: var(--font-data); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-text-secondary); display: flex; justify-content: space-between; margin-bottom: 5px; }
+.rep-next { color: var(--color-text-secondary); }
 .header-date {
   font-family: var(--font-data); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--text-2); display: flex; align-items: center; gap: 8px;
-  border: 1px solid var(--outline); background: var(--surface-2); padding: 7px 12px; border-radius: 10px; white-space: nowrap;
+  color: var(--color-text-secondary); display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--color-border); background: var(--color-surface-alt); padding: 7px 12px; border-radius: var(--radius-sm); white-space: nowrap;
 }
-.header-date::before { content: ''; width: 6px; height: 6px; background: var(--red); flex-shrink: 0; }
+.header-date::before { content: ''; width: 6px; height: 6px; background: var(--color-primary); flex-shrink: 0; }
 .header-cash { margin-left: auto; text-align: right; }
-.cash-label { font-family: var(--font-data); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-2); }
-.cash-now { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--green-bright); font-variant-numeric: tabular-nums; line-height: 1.1; }
-.cash-now.neg { color: var(--red); }
+.cash-label { font-family: var(--font-data); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-text-secondary); }
+.cash-now { font-size: var(--font-size-2xl); font-weight: var(--font-weight-extrabold); letter-spacing: -0.02em; color: var(--color-success); font-variant-numeric: tabular-nums; line-height: 1.1; font-family: var(--font-data); }
+.cash-now.neg { color: var(--color-danger); }
 .header-controls { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
 .theme-toggle { margin-left: auto; }
 
