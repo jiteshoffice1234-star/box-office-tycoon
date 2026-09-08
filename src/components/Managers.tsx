@@ -108,8 +108,8 @@ export function Managers({ state, apply }: { state: GameState; apply: (fn: (s: G
           </label>
         </div>
         {/* Content Control */}
-        <div style={{ marginTop: 10, padding: '10px 12px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, fontFamily: 'var(--font-data)' }}>
+        <div style={{ marginTop: 10, padding: '10px 12px', background: 'var(--color-surface-alt)', border: 'none', borderRadius: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-accent-dark)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, fontFamily: 'var(--font-data)' }}>
             🎯 Content Control — What will they make?
           </div>
           <div className="form-row">
@@ -151,7 +151,7 @@ export function Managers({ state, apply }: { state: GameState; apply: (fn: (s: G
               Sequels only
             </label>
           </div>
-          <div style={{ marginTop: 6, fontSize: 10, color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}>
+          <div style={{ marginTop: 6, fontSize: 10, color: 'var(--color-text-muted)', fontFamily: 'var(--font-data)' }}>
             {!franchiseName && !customLabel && '🎲 Manager will create original content each time'}
             {franchiseName && !customLabel && `🔁 Building "${franchiseName}" franchise — Part ${1 + (managers.length % 6)}`}
             {customLabel && !franchiseName && `🏷️ Everything will be branded "${customLabel}"`}
@@ -190,28 +190,28 @@ export function Managers({ state, apply }: { state: GameState; apply: (fn: (s: G
                   {fmtMoney(m.weeklySalary)}/week · {m.genre ?? 'Any genre'} · quality {m.qualityTarget} · max {fmtMoney(m.maxBudget)} · {m.marketingStrategy} marketing
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 3, alignItems: 'center' }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-data)', color: m.mood >= 85 ? 'var(--green-bright)' : m.mood >= 65 ? 'var(--gold)' : m.mood >= 45 ? 'var(--ink-muted)' : 'var(--red-soft)' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-data)', color: m.mood >= 85 ? 'var(--color-success)' : m.mood >= 65 ? 'var(--color-accent-dark)' : m.mood >= 45 ? 'var(--color-text-muted)' : 'var(--color-danger)' }}>
                     {m.mood >= 85 ? '🔥 THRILLED' : m.mood >= 65 ? '😊 Happy' : m.mood >= 45 ? '😐 Okay' : '😤 Unhappy'} ({m.mood}/100)
                   </span>
-                  <span style={{ fontSize: 9, color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}>
+                  <span style={{ fontSize: 9, color: 'var(--color-text-muted)', fontFamily: 'var(--font-data)' }}>
                     ~{m.mood >= 85 ? '100+' : m.mood >= 65 ? '50' : m.mood >= 45 ? '25' : '12'} per year
                   </span>
                 </div>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 3 }}>
-                  <span style={{ fontSize: 9, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)' }}>
+                  <span style={{ fontSize: 9, background: 'var(--color-surface-alt)', border: 'none', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)' }}>
                     {m.contentType === 'any' ? '🎲 Any' : m.contentType === 'movie' ? '🎬 Movies' : m.contentType === 'series' ? '📺 Series' : '📡 Shows'}
                   </span>
                   {m.franchiseName && (
-                    <span style={{ fontSize: 9, background: 'var(--gold-bg)', border: '1px solid var(--gold-border)', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)', color: 'var(--gold)' }}>
+                    <span style={{ fontSize: 9, background: 'var(--gold-bg)', border: '1px solid var(--gold-border)', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)', color: 'var(--color-accent-dark)' }}>
                       🔁 {m.franchiseName}{m.sequelsOnly ? ' (sequels only)' : ''}
                     </span>
                   )}
                   {m.customLabel && (
-                    <span style={{ fontSize: 9, background: 'var(--blue-bg)', border: '1px solid rgba(74,124,201,0.3)', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)', color: 'var(--blue-bright)' }}>
+                    <span style={{ fontSize: 9, background: 'var(--blue-bg)', border: '1px solid rgba(100,181,246,0.3)', borderRadius: 3, padding: '1px 5px', fontFamily: 'var(--font-data)', color: 'var(--color-info)' }}>
                       🏷️ {m.customLabel}
                     </span>
                   )}
-                  <span style={{ fontSize: 9, color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}>
+                  <span style={{ fontSize: 9, color: 'var(--color-text-muted)', fontFamily: 'var(--font-data)' }}>
                     {m.moviesMade} made
                   </span>
                 </div>
