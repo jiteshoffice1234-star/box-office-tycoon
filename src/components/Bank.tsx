@@ -119,17 +119,17 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
         {/* Investment Stats Bar */}
         {investments.length > 0 && (
           <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontFamily: 'var(--font-data)', flex: 1, minWidth: 100 }}>
-              <span style={{ color: 'var(--ink-muted)', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' }}>Total Invested</span><br/>
+            <span style={{ background: 'var(--color-surface-alt)', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontFamily: 'var(--font-data)', flex: 1, minWidth: 100 }}>
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' }}>Total Invested</span><br/>
               <strong style={{ fontSize: 14 }}>{fmtMoney(totalInvested)}</strong>
             </span>
-            <span style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontFamily: 'var(--font-data)', flex: 1, minWidth: 100 }}>
-              <span style={{ color: 'var(--ink-muted)', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' }}>Returned</span><br/>
-              <strong style={{ fontSize: 14, color: 'var(--green-bright)' }}>{fmtMoney(totalReturned)}</strong>
+            <span style={{ background: 'var(--color-surface-alt)', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontFamily: 'var(--font-data)', flex: 1, minWidth: 100 }}>
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' }}>Returned</span><br/>
+              <strong style={{ fontSize: 14, color: 'var(--color-success)' }}>{fmtMoney(totalReturned)}</strong>
             </span>
-            <span style={{ background: totalProfit >= 0 ? 'var(--green-bg)' : 'var(--red-bg)', border: '1px solid ' + (totalProfit >= 0 ? 'var(--green)' : 'var(--red)'), borderRadius: 6, padding: '6px 10px', fontSize: 11, fontFamily: 'var(--font-data)', flex: 1, minWidth: 100 }}>
-              <span style={{ color: 'var(--ink-muted)', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' }}>Profit/Loss</span><br/>
-              <strong style={{ fontSize: 14, color: totalProfit >= 0 ? 'var(--green-bright)' : 'var(--red-soft)' }}>{totalProfit >= 0 ? '+' : ''}{fmtMoney(totalProfit)}</strong>
+            <span style={{ background: totalProfit >= 0 ? 'var(--green-bg)' : 'var(--red-bg)', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontFamily: 'var(--font-data)', flex: 1, minWidth: 100 }}>
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' }}>Profit/Loss</span><br/>
+              <strong style={{ fontSize: 14, color: totalProfit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{totalProfit >= 0 ? '+' : ''}{fmtMoney(totalProfit)}</strong>
             </span>
           </div>
         )}
@@ -140,18 +140,18 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
             const max = Math.round(a.budget * INVEST_MAX_SHARE)
             const isSelected = investIn === a.name
             return (
-              <div key={a.name} className="row-item" style={{ borderColor: isSelected ? 'var(--gold)' : undefined, background: isSelected ? 'rgba(212,168,67,0.06)' : undefined }}>
+              <div key={a.name} className="row-item" style={{ borderColor: isSelected ? 'var(--color-accent)' : undefined, background: isSelected ? 'rgba(255,217,61,0.06)' : undefined }}>
                 <div style={{ flex: 1 }}>
                   <div className="item-title">{a.name}</div>
                   <div className="item-sub">
                     <GenreBadge g={a.genre} /> · budget {fmtMoney(a.budget)} · opens in {a.nextReleaseWeek - state.week}w
                   </div>
-                  <div className="item-sub" style={{ color: 'var(--ink-soft)', marginTop: 2 }}>
+                  <div className="item-sub" style={{ color: 'var(--color-text-secondary)', marginTop: 2 }}>
                     🎬 {a.genre} · {a.nextReleaseWeek - state.week}w to release
                   </div>
                   <div style={{ display: 'flex', gap: 8, marginTop: 4, fontSize: 10, fontFamily: 'var(--font-data)' }}>
-                    <span style={{ color: 'var(--gold)' }}>💰 Max stake: {fmtMoney(max)}</span>
-                    <span style={{ color: 'var(--ink-muted)' }}>· {(INVEST_MAX_SHARE * 100).toFixed(0)}% of budget</span>
+                    <span style={{ color: 'var(--color-accent-dark)' }}>💰 Max stake: {fmtMoney(max)}</span>
+                    <span style={{ color: 'var(--color-text-muted)' }}>· {(INVEST_MAX_SHARE * 100).toFixed(0)}% of budget</span>
                   </div>
                 </div>
                 <div className="row-actions">
@@ -172,13 +172,13 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
         </div>
 
         {investTarget && (
-          <div style={{ marginTop: 12, padding: 12, background: 'var(--bg-input)', border: '1px solid var(--gold-border)', borderRadius: 8 }}>
+          <div style={{ marginTop: 12, padding: 12, background: 'var(--color-surface-alt)', border: '1px solid var(--gold-border)', borderRadius: 8 }}>
             <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
               💰 Invest in {investTarget.name}
             </div>
             <div className="form-row">
               <label className="grow">
-                Amount: <strong style={{ color: 'var(--gold)' }}>{fmtMoney(investAmount)}</strong>
+                Amount: <strong style={{ color: 'var(--color-accent-dark)' }}>{fmtMoney(investAmount)}</strong>
                 <input
                   type="range"
                   min={INVEST_MIN}
@@ -191,20 +191,20 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
             </div>
             {/* Projected Returns */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 10 }}>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', textAlign: 'center' }}>
-                <div style={{ fontSize: 9, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>Your Stake</div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--gold)', fontFamily: 'var(--font-data)' }}>{investMax > 0 ? ((investAmount / investTarget.budget) * 100).toFixed(1) : 0}%</div>
+              <div style={{ background: 'var(--color-surface)', border: 'none', borderRadius: 6, padding: '6px 8px', textAlign: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ fontSize: 9, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>Your Stake</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-accent-dark)', fontFamily: 'var(--font-data)' }}>{investMax > 0 ? ((investAmount / investTarget.budget) * 100).toFixed(1) : 0}%</div>
               </div>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', textAlign: 'center' }}>
-                <div style={{ fontSize: 9, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>If Budget Hit</div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--green-bright)', fontFamily: 'var(--font-data)' }}>~{fmtMoney(investAmount * 1.5)}</div>
+              <div style={{ background: 'var(--color-surface)', border: 'none', borderRadius: 6, padding: '6px 8px', textAlign: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ fontSize: 9, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>If Budget Hit</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-success)', fontFamily: 'var(--font-data)' }}>~{fmtMoney(investAmount * 1.5)}</div>
               </div>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', textAlign: 'center' }}>
-                <div style={{ fontSize: 9, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>If Blockbuster</div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--gold-bright)', fontFamily: 'var(--font-data)' }}>~{fmtMoney(investAmount * 4)}</div>
+              <div style={{ background: 'var(--color-surface)', border: 'none', borderRadius: 6, padding: '6px 8px', textAlign: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ fontSize: 9, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--font-data)' }}>If Blockbuster</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-accent-dark)', fontFamily: 'var(--font-data)' }}>~{fmtMoney(investAmount * 4)}</div>
               </div>
             </div>
-            <div style={{ marginTop: 8, fontSize: 10, color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}>
+            <div style={{ marginTop: 8, fontSize: 10, color: 'var(--color-text-muted)', fontFamily: 'var(--font-data)' }}>
               You earn {(investAmount / investTarget.budget * 100).toFixed(1)}% of the film's total box office for its entire theatrical run.
             </div>
           </div>
@@ -224,14 +224,14 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
         {/* Active Investments */}
         {activeInvestments.length > 0 && (
           <div style={{ marginTop: 12 }}>
-            <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6, fontFamily: 'var(--font-data)' }}>
+            <div style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6, fontFamily: 'var(--font-data)' }}>
               Active ({activeInvestments.length})
             </div>
             <div className="list">
               {activeInvestments.map((inv) => {
                 const earning = inv.movieId !== null
                 return (
-                  <div key={inv.id} className="row-item" style={{ borderLeft: '3px solid ' + (earning ? 'var(--gold)' : 'var(--border)') }}>
+                  <div key={inv.id} className="row-item" style={{ borderLeft: '3px solid ' + (earning ? 'var(--color-accent)' : 'var(--color-border)') }}>
                     <div style={{ flex: 1 }}>
                       <div className="item-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span>{inv.studioName}</span>
@@ -240,7 +240,7 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
                       <div className="item-sub" style={{ marginTop: 2 }}>
                         {earning ? (
                           <span>
-                            <span style={{ color: 'var(--gold)' }}>▶ Earning</span> · {Math.round(inv.share * 100)}% stake · {fmtMoney(inv.totalReturn)} earned
+                            <span style={{ color: 'var(--color-accent-dark)' }}>▶ Earning</span> · {Math.round(inv.share * 100)}% stake · {fmtMoney(inv.totalReturn)} earned
                           </span>
                         ) : (
                           <span>Opens {dateInfo(inv.releaseWeek).monthName} Y{dateInfo(inv.releaseWeek).year} · {Math.round(inv.share * 100)}% stake</span>
@@ -257,21 +257,21 @@ export function Bank({ state, apply }: { state: GameState; apply: (fn: (s: GameS
         {/* Settled Investments */}
         {settledInvestments.length > 0 && (
           <div style={{ marginTop: 12 }}>
-            <div style={{ fontSize: 11, color: 'var(--ink-muted)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6, fontFamily: 'var(--font-data)' }}>
+            <div style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6, fontFamily: 'var(--font-data)' }}>
               Settled ({settledInvestments.length})
             </div>
             <div className="list">
               {settledInvestments.slice(-5).reverse().map((inv) => {
                 const profit = inv.totalReturn - inv.amount
                 return (
-                  <div key={inv.id} className="row-item" style={{ borderLeft: '3px solid ' + (profit >= 0 ? 'var(--green)' : 'var(--red)') }}>
+                  <div key={inv.id} className="row-item" style={{ borderLeft: '3px solid ' + (profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)') }}>
                     <div style={{ flex: 1 }}>
                       <div className="item-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span>{inv.studioName}</span>
                         <span className="price">{fmtMoney(inv.amount)}</span>
                       </div>
                       <div className="item-sub" style={{ marginTop: 2 }}>
-                        <span style={{ color: profit >= 0 ? 'var(--green-bright)' : 'var(--red-soft)' }}>
+                        <span style={{ color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>
                           {profit >= 0 ? '✅' : '❌'} Returned {fmtMoney(inv.totalReturn)} ({profit >= 0 ? '+' : ''}{fmtMoney(profit)})
                         </span>
                       </div>
