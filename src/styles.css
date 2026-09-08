@@ -193,8 +193,18 @@ html, body {
   to { opacity: 1; transform: none; }
 }
 
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 /* ============ APP SHELL ============ */
-.app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; animation: fadeUp 0.35s ease; }
+.app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; animation: fadeUp 0.35s var(--easing); }
 .app-content { flex: 1; padding: 16px 16px calc(var(--nav-height) + 24px); max-width: 860px; width: 100%; margin: 0 auto; }
 .app-content > main { display: flex; flex-direction: column; gap: 12px; }
 
@@ -291,7 +301,7 @@ html, body {
   color: var(--text); font-weight: 600; font-size: 13px;
 }
 
-/* ============ CARDS — Shadow-based edges ============ */
+/* ============ CARDS — Shadow-based edges with hover ============ */
 .grid { display: grid; gap: 12px; }
 .card {
   background: var(--color-surface);
@@ -299,6 +309,11 @@ html, body {
   border-radius: var(--radius-md);
   padding: var(--space-4);
   box-shadow: var(--shadow-md);
+  transition: box-shadow var(--duration-fast) var(--easing), transform var(--duration-fast) var(--easing);
+}
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
 }
 .card-gold { box-shadow: var(--shadow-md), 0 0 0 1px var(--gold-border); }
 .card-alert { box-shadow: var(--shadow-md), 0 0 0 1px var(--color-danger); }
@@ -397,6 +412,11 @@ html, body {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   background: var(--color-surface); border: none; border-radius: var(--radius-sm); padding: 12px 14px;
   box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--duration-fast) var(--easing), transform var(--duration-fast) var(--easing);
+}
+.row-item:hover, .talent-row:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 .item-title { font-weight: var(--font-weight-semibold); font-size: var(--font-size-base); }
 .item-sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
