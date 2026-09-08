@@ -107,8 +107,8 @@ export function Casting({ state, apply }: { state: GameState; apply: (fn: (s: Ga
       <Card title="Production budget" right={<span className="muted">No limits — you're the boss</span>}>
         <div style={{ marginBottom: 10 }}>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-soft)' }}>
-              Budget: <strong style={{ color: 'var(--gold)', fontSize: 16 }}>{fmtMoney(actualBudget)}</strong>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)' }}>
+              Budget: <strong style={{ color: 'var(--color-accent-dark)', fontSize: 16 }}>{fmtMoney(actualBudget)}</strong>
             </span>
             <input
               type="range"
