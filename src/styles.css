@@ -369,27 +369,27 @@ html, body {
 
 /* ============ BADGES / PILLS ============ */
 .genre-badge {
-  display: inline-flex; align-items: center; gap: 4px; background: var(--surface-2);
-  border: 1px solid var(--outline); border-radius: 999px; padding: 5px 11px;
-  font-family: var(--font-data); font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2);
+  display: inline-flex; align-items: center; gap: 4px; background: var(--color-surface-alt);
+  border: 1px solid var(--color-border); border-radius: var(--radius-full); padding: 5px 11px;
+  font-family: var(--font-data); font-size: 9.5px; font-weight: var(--font-weight-semibold); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-secondary);
 }
 .franchise-badge, .dist-badge, .you-badge, .hired-badge {
-  display: inline-flex; align-items: center; border: 1px solid var(--outline); border-radius: 999px;
-  padding: 3px 9px; font-family: var(--font-data); font-size: 9px; font-weight: 600; margin-left: 6px;
+  display: inline-flex; align-items: center; border: 1px solid var(--color-border); border-radius: var(--radius-full);
+  padding: 3px 9px; font-family: var(--font-data); font-size: 9px; font-weight: var(--font-weight-semibold); margin-left: 6px;
 }
-.franchise-badge { background: var(--gold-bg); border-color: var(--gold-border); color: var(--gold); }
-.dist-badge { background: var(--blue-bg); color: var(--blue-bright); border-color: var(--outline); }
-.you-badge, .hired-badge { background: var(--green-bg); color: var(--green-bright); border-color: var(--outline); }
+.franchise-badge { background: var(--gold-bg); border-color: var(--gold-border); color: var(--color-accent-dark); }
+.dist-badge { background: var(--blue-bg); color: var(--color-info); border-color: var(--color-border); }
+.you-badge, .hired-badge { background: var(--green-bg); color: var(--color-success); border-color: var(--color-border); }
 
-/* ============ TABLES / LISTS — cheap hover, virtualized feel ============ */
+/* ============ TABLES / LISTS ============ */
 .table-scroll { overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.table th { text-align: left; font-family: var(--font-data); font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2); padding: 8px; border-bottom: 1px solid var(--outline); }
-.table td { padding: 9px 8px; border-bottom: 1px solid var(--outline); vertical-align: middle; }
+.table th { text-align: left; font-family: var(--font-data); font-size: 9px; font-weight: var(--font-weight-semibold); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-text-secondary); padding: 8px; border-bottom: 1px solid var(--color-border); }
+.table td { padding: 9px 8px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
 .table .num { text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.cell-title { font-weight: 700; font-size: 12px; }
-.cell-sub { font-size: 10px; color: var(--text-2); font-family: var(--font-data); }
-.cell-bar { height: 5px; margin-top: 5px; background: var(--surface-3); border-radius: 3px; overflow: hidden; }
+.cell-title { font-weight: var(--font-weight-semibold); font-size: 12px; }
+.cell-sub { font-size: 10px; color: var(--color-text-secondary); font-family: var(--font-data); }
+.cell-bar { height: 5px; margin-top: 5px; background: var(--color-surface-alt); border-radius: var(--radius-full); overflow: hidden; }
 .you-dot { display: inline-block; width: 6px; height: 6px; background: var(--color-success); border-radius: 50%; margin-right: 5px; }
 .status { font-size: 10px; color: var(--color-text-secondary); font-family: var(--font-data); }
 .list { display: grid; gap: 8px; content-visibility: auto; }
@@ -545,7 +545,7 @@ input[type='range'] { accent-color: var(--color-primary); width: 100%; }
 @media (min-width: 768px) {
   .app-content { padding: 20px 24px 32px; }
   .stats-row { grid-template-columns: repeat(5, 1fr); }
-  .stat-value { font-size: 19px; }
+  .stat-value { font-size: var(--font-size-xl); }
   .bottom-nav { display: none; }
   .header-controls { width: auto; margin-left: auto; }
   .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 12px; }
