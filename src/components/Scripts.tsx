@@ -127,24 +127,24 @@ function MarketingCampaign({ state, apply }: { state: GameState; apply: (fn: (s:
       {/* Theatrical vs Streaming comparison */}
       <Card title="📡 Theatrical vs Streaming" right={<span className="muted">Choose your release path</span>}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div style={{ background: 'var(--slate)', border: '2px solid var(--gold-border)', borderRadius: 8, padding: 12 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, fontFamily: 'var(--font-display)', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 6 }}>🎬 Theatrical</div>
-            <div style={{ fontSize: 11, color: 'var(--ink-soft)', lineHeight: 1.5 }}>
+          <div style={{ background: 'var(--color-surface-alt)', border: '2px solid var(--gold-border)', borderRadius: 8, padding: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, fontFamily: 'var(--font-family)', textTransform: 'uppercase', color: 'var(--color-accent-dark)', marginBottom: 6 }}>🎬 Theatrical</div>
+            <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
               <div>• Opening weekend variable</div>
               <div>• Total gross depends on quality + hype</div>
               <div>• Box office run: 21 weeks</div>
-              <div>• Potential: <strong style={{ color: 'var(--green-bright)' }}>{fmtMoney(m.quality * 300_000 * (projectedHype / 50))}</strong></div>
-              <div>• Risk: <span style={{ color: 'var(--red-soft)' }}>can flop</span></div>
+              <div>• Potential: <strong style={{ color: 'var(--color-success)' }}>{fmtMoney(m.quality * 300_000 * (projectedHype / 50))}</strong></div>
+              <div>• Risk: <span style={{ color: 'var(--color-danger)' }}>can flop</span></div>
             </div>
           </div>
-          <div style={{ background: 'var(--slate)', border: '2px solid rgba(74,140,212,0.3)', borderRadius: 8, padding: 12 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, fontFamily: 'var(--font-display)', textTransform: 'uppercase', color: 'var(--blue-bright)', marginBottom: 6 }}>📡 Streaming</div>
-            <div style={{ fontSize: 11, color: 'var(--ink-soft)', lineHeight: 1.5 }}>
-              <div>• Guaranteed: <strong style={{ color: 'var(--green-bright)' }}>{fmtMoney(m.productionBudget * 0.6)}</strong></div>
+          <div style={{ background: 'var(--color-surface-alt)', border: '2px solid rgba(100,181,246,0.3)', borderRadius: 8, padding: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, fontFamily: 'var(--font-family)', textTransform: 'uppercase', color: 'var(--color-info)', marginBottom: 6 }}>📡 Streaming</div>
+            <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+              <div>• Guaranteed: <strong style={{ color: 'var(--color-success)' }}>{fmtMoney(m.productionBudget * 0.6)}</strong></div>
               <div>• Subscriber boost: +{Math.round(m.quality * 0.3).toLocaleString()}</div>
               <div>• Passive weekly income starts immediately</div>
               <div>• No marketing spend needed</div>
-              <div>• Risk: <strong style={{ color: 'var(--green-bright)' }}>zero</strong></div>
+              <div>• Risk: <strong style={{ color: 'var(--color-success)' }}>zero</strong></div>
             </div>
           </div>
         </div>
@@ -153,7 +153,7 @@ function MarketingCampaign({ state, apply }: { state: GameState; apply: (fn: (s:
       <Card title={`Marketing — "${m.title}"`} right={<GenreBadge g={m.genre} />}>
         <div className="quality-line">
           <span>Hype now: {Math.round(m.hype)}/100</span>
-          <Bar value={m.hype} color="var(--gold)" />
+          <Bar value={m.hype} color="var(--color-accent)" />
         </div>
         <div className="hint">
           Hype drives the box office: 50 hype = ×2 opening, 100 hype = ×100. Aim for max hype.
@@ -166,7 +166,7 @@ function MarketingCampaign({ state, apply }: { state: GameState; apply: (fn: (s:
           Spent so far: {fmtMoney(m.marketingSpent)}. Marketing runs automatically every week until release.
         </div>
 
-        <h3 style={{ marginTop: 10, fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Campaign strategy (chosen once)</h3>
+        <h3 style={{ marginTop: 10, fontFamily: 'var(--font-family)', fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Campaign strategy (chosen once)</h3>
         <div className="strategy-grid">
           {STRATEGIES.map((s) => (
             <label key={s.name} className={`strategy-card${strategy === s.name ? ' active' : ''}`}>
