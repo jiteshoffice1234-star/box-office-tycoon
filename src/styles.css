@@ -316,17 +316,52 @@ html, body {
 .card-right { color: var(--color-text-secondary); font-size: 10px; font-family: var(--font-data); }
 .row { display: flex; flex-direction: column; gap: 12px; }
 
-/* ============ STATS — VYRA 2-col tiles ============ */
+/* ============ STATS — Larger values, gradient fills ============ */
 .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; overflow: visible; padding: 0; }
-.stat { background: var(--surface-2); border: 1px solid var(--outline); border-radius: 16px; padding: 14px; min-width: 0; }
-.stat-label { font-family: var(--font-data); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-2); }
-.stat-value { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: 8px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.stat-sub { font-size: 11px; color: var(--text-2); font-family: var(--font-data); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat {
+  background: var(--color-surface-alt);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  min-width: 0;
+}
+.stat-label {
+  font-family: var(--font-data);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+.stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: -0.02em;
+  margin: 8px 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-data);
+}
+.stat-sub { font-size: 11px; color: var(--color-text-secondary); font-family: var(--font-data); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* ============ BARS — GPU transform, no layout thrash ============ */
-.bar { height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
-.bar-fill { height: 100%; width: 100%; border-radius: 3px; background: var(--red); transform-origin: left center; transition: transform 0.5s ease; will-change: transform; }
-.quality-line { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12px; font-family: var(--font-data); color: var(--text-2); }
+/* ============ BARS — Gradient fills ============ */
+.bar {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-alt);
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  transform-origin: left center;
+  transition: transform var(--duration-normal) var(--easing);
+  will-change: transform;
+}
+.quality-line { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12px; font-family: var(--font-data); color: var(--color-text-secondary); }
 .quality-line .bar { flex: 1; }
 
 /* ============ BADGES / PILLS ============ */
