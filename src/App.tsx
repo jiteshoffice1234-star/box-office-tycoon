@@ -11,6 +11,7 @@ import { Marketing } from './components/Marketing'
 import { Movies } from './components/Movies'
 import { Bank } from './components/Bank'
 import { Managers } from './components/Managers'
+import { Reports } from './components/Reports'
 import { Btn, fmtMoney } from './components/ui'
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -21,6 +22,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'movies', label: 'Films', icon: '🎥' },
   { id: 'bank', label: 'Bank', icon: '🏦' },
   { id: 'managers', label: 'Staff', icon: '👔' },
+  { id: 'reports', label: 'Reports', icon: '📊' },
 ]
 
 function pendingTab(s: GameState): Tab | null {
@@ -130,6 +132,7 @@ export default function App() {
             {tab === 'movies' && <Movies state={state} apply={apply} />}
             {tab === 'bank' && <Bank state={state} apply={apply} />}
             {tab === 'managers' && <Managers state={state} apply={apply} />}
+            {tab === 'reports' && <Reports state={state} />}
           </main>
           <footer className="footer">
             <span>Box Office Tycoon · saves automatically</span>
@@ -225,5 +228,4 @@ function StartScreen({ onStart }: { onStart: (name: string, cash: number) => voi
     </div>
   )
 }
-
 

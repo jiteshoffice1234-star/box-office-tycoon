@@ -1,7 +1,8 @@
-import type { GameState, Loan } from './types'
+import { createOpeningLedger } from './reports'
+import type { GameState, LedgerEntry, Loan } from './types'
 
 const KEY = 'box-office-tycoon-save-v1'
-const CURRENT_VERSION = 2
+const CURRENT_VERSION = 3
 
 export function saveGame(s: GameState): void {
   try {
@@ -55,6 +56,26 @@ export function loadGame(): GameState | null {
     // migrate v1 saves -> v2 (loans & investments were added)
     if (!Array.isArray(parsed.loans)) parsed.loans = []
     if (!Array.isArray(parsed.investments)) parsed.investments = []
+    // Ledger was introduced after the original save format. Reconstruct a
+    // cash-balanced opening ledger without discarding any gameplay state.
+    if (!Array.isArray(parsed.ledger)) {
+      const opening = parsed.cash - (parsed.stats.totalEarned || 0) + (parsed.stats.totalSpent || 0)
+      parsed.ledger = createOpeningLedger(opening)
+      const adjustment = parsed.cash - opening
+      if (adjustment !== 0) {
+        parsed.ledger.push({
+          id: 'ledger-migration-adjustment',
+          week: parsed.week,
+          category: 'otherIncome',
+          amount: adjustment,
+          cashEffect: adjustment,
+          classification: 'transfer',
+          description: 'Legacy save balance adjustment',
+        })
+      }
+    } else {
+      parsed.ledger = parsed.ledger.filter(validLedgerEntry)
+    }
     // migrate saves without hired managers
     if (!Array.isArray(parsed.managers)) parsed.managers = []
     // migrate manager content control fields
@@ -65,6 +86,15 @@ export function loadGame(): GameState | null {
       if (typeof mgr.sequelsOnly !== 'boolean') mgr.sequelsOnly = false
       if (typeof mgr.mood !== 'number') mgr.mood = 50
       if (typeof mgr.cooldownUntil !== 'number') mgr.cooldownUntil = 0
+    }
+
+    function validLedgerEntry(entry: unknown): entry is LedgerEntry {
+      if (!entry || typeof entry !== 'object') return false
+      const e = entry as LedgerEntry
+      return typeof e.id === 'string' && typeof e.week === 'number' && Number.isFinite(e.week)
+        && typeof e.category === 'string' && typeof e.amount === 'number' && Number.isFinite(e.amount)
+        && typeof e.cashEffect === 'number' && Number.isFinite(e.cashEffect)
+        && typeof e.classification === 'string' && typeof e.description === 'string'
     }
     if (typeof parsed.nextManagerIdx !== 'number') parsed.nextManagerIdx = 0
     if (!Array.isArray(parsed.managerProductions)) parsed.managerProductions = []

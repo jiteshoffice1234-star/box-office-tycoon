@@ -58,6 +58,7 @@ import type {
   Role,
   Script,
   Talent,
+  LedgerEntry,
 } from './types'
 
 // ---------------------------------------------------------------------------
@@ -66,6 +67,21 @@ import type {
 
 let idCounter = 0
 const uid = (): string => `g${++idCounter}_${Math.floor(Math.random() * 1e6)}`
+
+function recordLedger(
+  state: GameState,
+  entry: Omit<LedgerEntry, 'id' | 'week'> & { week?: number },
+): GameState {
+  const nextId = state.nextId ?? 1
+  return {
+    ...state,
+    nextId: nextId + 1,
+    ledger: [
+      ...(state.ledger ?? []),
+      { ...entry, id: `ledger-${nextId}`, week: entry.week ?? state.week },
+    ],
+  }
+}
 
 const pick = <T,>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)]
 
@@ -203,6 +219,15 @@ export function newGame(studioName: string, startCash: number = START_CASH): Gam
     cash,
     reputation: 0,
     week: 0,
+    ledger: [{
+      id: 'ledger-opening',
+      week: 0,
+      category: 'openingCapital',
+      amount: cash,
+      cashEffect: cash,
+      classification: 'equity',
+      description: 'Opening studio capital',
+    }],
     talents: initialTalents(),
     scripts: [],
     market,
@@ -353,6 +378,7 @@ export function tick(s: GameState): GameState {
     if (evt.type === 'scandal' && evt.effect === 'negative') {
       const loss = Math.round(st.cash * rand(0.05, 0.20)) // lose 5-20% of cash
       st.cash -= loss
+      st = recordLedger(st, { category: 'operatingCost', amount: loss, cashEffect: -loss, classification: 'expense', description: 'Financial event loss' })
       st.reputation = clamp(Math.round(st.reputation - rand(3, 12)), 0, 300)
       addLog(st, events, `💸 Financial damage: -${fmt(loss)} cash, -reputation`, 'bad')
     }
@@ -366,6 +392,7 @@ export function tick(s: GameState): GameState {
     if (evt.type === 'strike' && evt.effect === 'negative') {
       const penalty = Math.round(rand(500_000, 5_000_000))
       st.cash -= penalty
+      st = recordLedger(st, { category: 'operatingCost', amount: penalty, cashEffect: -penalty, classification: 'expense', description: 'Strike disruption cost' })
       st.reputation = clamp(Math.round(st.reputation - rand(3, 8)), 0, 300)
     }
     
@@ -400,7 +427,10 @@ export function tick(s: GameState): GameState {
 
   // ---- manager salaries (weekly, for every active manager)
   for (const m of st.managers) {
-    if (m.active && m.weeklySalary > 0) st.cash -= m.weeklySalary
+    if (m.active && m.weeklySalary > 0) {
+      st.cash -= m.weeklySalary
+      st = recordLedger(st, { category: 'managerSalary', amount: m.weeklySalary, cashEffect: -m.weeklySalary, classification: 'expense', description: `${m.name} weekly salary` })
+    }
   }
 
   // ---- production / marketing / release
@@ -433,6 +463,7 @@ export function tick(s: GameState): GameState {
       const strat = STRATEGIES.find((x) => x.name === prod.marketingStrategy) ?? STRATEGIES[2]
       const spend = Math.min(st.cash, strat.pct * prod.movie.productionBudget)
       st.cash -= spend
+      if (spend > 0) st = recordLedger(st, { category: 'marketing', amount: spend, cashEffect: -spend, classification: 'expense', description: `Marketing for "${prod.movie.title}"` })
       prod.movie.marketingSpent += spend
       prod.movie.cost += spend
       const gain = hypeGain(strat.pct, prod.movie.productionBudget)
@@ -518,6 +549,7 @@ export function tick(s: GameState): GameState {
         const strat = STRATEGIES.find((x) => x.name === prod.marketingStrategy) ?? STRATEGIES[2]
         const spend = Math.min(st.cash, strat.pct * prod.movie.productionBudget)
         st.cash -= spend
+        if (spend > 0) st = recordLedger(st, { category: 'marketing', amount: spend, cashEffect: -spend, classification: 'expense', description: `Marketing for "${prod.movie.title}"` })
         prod.movie.marketingSpent += spend
         prod.movie.cost += spend
         const gain = hypeGain(strat.pct, prod.movie.productionBudget)
@@ -625,7 +657,8 @@ export function tick(s: GameState): GameState {
               if (!t) return false
               const busy = t.role === 'actor' ? Math.round(rand(6, 14)) : t.role === 'director' ? Math.round(rand(8, 16)) : Math.round(rand(4, 10))
               const hired = { ...t, hiredWeek: st.week, busyUntil: st.week + busy, asking: t.asking }
-              st = { ...st, cash: st.cash - t.asking, talents: st.talents.map((x) => (x.id === t.id ? hired : x)) }
+              st = recordLedger({ ...st, cash: st.cash - t.asking, talents: st.talents.map((x) => (x.id === t.id ? hired : x)) },
+                { category: 'talent', amount: t.asking, cashEffect: -t.asking, classification: 'expense', description: `Manager hired ${t.name}` })
               if (t.role === 'writer') sequelMovie.writerId = t.id
               else if (t.role === 'director') sequelMovie.directorId = t.id
               else sequelMovie.actorIds = [...sequelMovie.actorIds, t.id]
@@ -658,7 +691,8 @@ export function tick(s: GameState): GameState {
                 productionBudget: budget,
                 deptBalance: deptBalance(depts),
               })
-              st = { ...st, cash: st.cash - budget }
+              st = recordLedger({ ...st, cash: st.cash - budget },
+                { category: 'production', amount: budget, cashEffect: -budget, classification: 'expense', description: `Manager production budget for "${sequelMovie.title}"` })
               const sequelProd: Production = {
                 movie: { ...sequelMovie, productionBudget: budget, departments: { ...depts }, quality: q, cost: sequelMovie.cost + budget, status: `Filming (${weeks} weeks)` },
                 phase: 'production',
@@ -762,6 +796,7 @@ export function tick(s: GameState): GameState {
         const residual = m.opening * 0.001 * (m.quality / 100) * rand(0.5, 1.5)
         if (residual > 100 && m.owner === 'player') {
           st.cash += residual
+          st = recordLedger(st, { category: 'boxOffice', amount: residual, cashEffect: residual, classification: 'income', description: `Evergreen revenue from "${m.title}"` })
           st.stats.totalEarned += residual
         }
         // evergreen eventually fades (after ~2 years total)
@@ -778,11 +813,13 @@ export function tick(s: GameState): GameState {
         const share = g * (0.55 + 0.4 * genreMeta(m.genre).intl + 0.18)
         m.revenue += share
         st.cash += share
+        st = recordLedger(st, { category: 'boxOffice', amount: share, cashEffect: share, classification: 'income', description: `Box office share from "${m.title}"` })
         st.stats.totalEarned += share
       } else if (m.owner === 'distributed') {
         const share = g * 0.5
         m.revenue += share
         st.cash += share
+        st = recordLedger(st, { category: 'boxOffice', amount: share, cashEffect: share, classification: 'income', description: `Distributed box office share from "${m.title}"` })
         st.stats.totalEarned += share
       } else if (m.owner === 'ai') {
         // player investment stakes earn a MASSIVE slice — up to 1000x potential
@@ -800,6 +837,7 @@ export function tick(s: GameState): GameState {
             const pay = Math.round(baseShare * g * megaMultiplier)
             if (pay > 0) {
               st.cash += pay
+              st = recordLedger(st, { category: 'investmentReturn', amount: pay, cashEffect: pay, classification: 'income', description: `Investment return from "${m.title}"` })
               st.stats.totalEarned += pay
               inv.totalReturn += pay
             }
@@ -820,6 +858,10 @@ export function tick(s: GameState): GameState {
       if (loan.kind === 'borrow') {
         const pay = Math.min(loan.installment, loan.outstanding)
         st.cash -= pay
+        const principalPaid = Math.min(loan.principal - Math.round(loan.principal * loan.collectionsDone / loan.totalCollections), pay)
+        const interestPaid = pay - principalPaid
+        st = recordLedger(st, { category: 'loanRepayment', amount: principalPaid, cashEffect: -principalPaid, classification: 'transfer', description: `Loan principal repayment` })
+        if (interestPaid > 0) st = recordLedger(st, { category: 'loanInterest', amount: interestPaid, cashEffect: -interestPaid, classification: 'expense', description: `Loan interest payment` })
         loan.outstanding -= pay
         loan.collectionsDone += 1
         if (loan.outstanding <= 0) {
@@ -843,6 +885,7 @@ export function tick(s: GameState): GameState {
           // STUDIO DEFAULTS! Transfer assets to player
           const assetTransfer = Math.round(studio.assets * 0.5) // get 50% of their assets
           st.cash += assetTransfer
+          st = recordLedger(st, { category: 'lending', amount: assetTransfer, cashEffect: assetTransfer, classification: 'income', description: `Assets seized after ${loan.studioName} loan default` })
           st.stats.totalEarned += assetTransfer
           studio.defaults = (studio.defaults || 0) + 1
           studio.creditScore = Math.max(0, studio.creditScore - 20) // tank their credit
@@ -861,6 +904,10 @@ export function tick(s: GameState): GameState {
         
         const pay = final ? total - loan.received : loan.installment
         st.cash += pay
+        const principalReceived = Math.min(loan.principal - Math.round(loan.principal * loan.collectionsDone / loan.totalCollections), pay)
+        const interestReceived = pay - principalReceived
+        st = recordLedger(st, { category: 'lending', amount: principalReceived, cashEffect: principalReceived, classification: 'transfer', description: `Lending principal received from ${loan.studioName}` })
+        if (interestReceived > 0) st = recordLedger(st, { category: 'otherIncome', amount: interestReceived, cashEffect: interestReceived, classification: 'income', description: `Lending interest received from ${loan.studioName}` })
         loan.received += pay
         loan.collectionsDone += 1
         if (final) {
@@ -993,7 +1040,7 @@ export function createScript(s: GameState, genre: Genre, quality: number, custom
     contentType,
   }
   const label = contentType === 'movie' ? 'movie' : contentType === 'series' ? 'TV series' : 'TV show'
-  return {
+  return recordLedger({
     ...s,
     cash: s.cash - cost,
     scripts: [...s.scripts, script],
@@ -1001,13 +1048,13 @@ export function createScript(s: GameState, genre: Genre, quality: number, custom
       news(s.week, `✍️ You wrote a ${label} script "${title}" (${genre}, quality ${q}) for ${fmt(cost)}.`, 'good'),
       ...s.log,
     ].slice(0, LOG_CAP),
-  }
+  }, { category: 'scripts', amount: cost, cashEffect: -cost, classification: 'expense', description: `Wrote ${label} script "${title}"` })
 }
 
 export function buyScript(s: GameState, scriptId: string): GameState {
   const sc = s.market.find((x) => x.id === scriptId)
   if (!sc || s.cash < sc.price) return s
-  return {
+  return recordLedger({
     ...s,
     cash: s.cash - sc.price,
     market: s.market.filter((x) => x.id !== scriptId),
@@ -1016,7 +1063,7 @@ export function buyScript(s: GameState, scriptId: string): GameState {
       news(s.week, `📜 Bought spec script "${sc.title}" (${sc.genre}, quality ${sc.quality}) for ${fmt(sc.price)}.`, 'good'),
       ...s.log,
     ].slice(0, LOG_CAP),
-  }
+  }, { category: 'scripts', amount: sc.price, cashEffect: -sc.price, classification: 'expense', description: `Bought script "${sc.title}"` })
 }
 
 /** Start a new production from an owned script. */
@@ -1139,7 +1186,7 @@ export function hireTalent(s: GameState, talentId: string, offer: number): GameS
     // Paid asking or above — reputation boost
     repChange = 1
   }
-  return {
+  return recordLedger({
     ...s,
     cash: s.cash - offerAmt,
     reputation: clamp(Math.round(s.reputation + repChange), 0, REP_MAX),
@@ -1157,7 +1204,7 @@ export function hireTalent(s: GameState, talentId: string, offer: number): GameS
       ),
       ...s.log,
     ].slice(0, LOG_CAP),
-  }
+  }, { category: 'talent', amount: offerAmt, cashEffect: -offerAmt, classification: 'expense', description: `Hired ${t.name}` })
 }
 
 /** Remove a cast member from the current production (they keep the money). */
@@ -1173,14 +1220,14 @@ export function dropCast(s: GameState, talentId: string): GameState {
   else prod.movie.actorIds = prod.movie.actorIds.filter((id) => id !== talentId)
   const refund = Math.max(0, t.asking)
   const released = { ...t, hiredWeek: -1, busyUntil: 0 }
-  return {
+  return recordLedger({
     ...s,
     cash: s.cash + refund,
     stats: { ...s.stats, totalSpent: Math.max(0, s.stats.totalSpent - refund) },
     talents: s.talents.map((x) => (x.id === talentId ? released : x)),
     production: { ...prod, movie: { ...prod.movie, cost: Math.max(0, prod.movie.cost - refund) } },
     log: [news(s.week, `${t.name} was dropped from "${prod.movie.title}" and ${fmt(refund)} was refunded.`, 'info'), ...s.log].slice(0, LOG_CAP),
-  }
+  }, { category: 'talent', amount: refund, cashEffect: refund, classification: 'transfer', description: `Refund for dropping ${t.name}` })
 }
 
 /** Pay the production budget and start filming. */
@@ -1216,7 +1263,7 @@ export function startProduction(s: GameState, depts: DepartmentAlloc): GameState
       status: `Filming (${weeks} weeks)`,
     },
   }
-  return {
+  return recordLedger({
     ...s,
     cash: s.cash - budget,
     production: prod,
@@ -1224,7 +1271,7 @@ export function startProduction(s: GameState, depts: DepartmentAlloc): GameState
       news(s.week, `🎬 Production begins on "${movie.title}" — ${fmt(budget)} budget, ${weeks} weeks of filming. Estimated quality ${q}.`, 'good'),
       ...s.log,
     ].slice(0, LOG_CAP),
-  }
+  }, { category: 'production', amount: budget, cashEffect: -budget, classification: 'expense', description: `Production budget for "${movie.title}"` })
 }
 
 export function setRelease(s: GameState, releaseWeek: number, strategy: string): GameState {
@@ -1404,7 +1451,7 @@ export function takeLoan(
     takenWeek: s.week,
     settled: false,
   }
-  return {
+  return recordLedger({
     ...s,
     cash: s.cash + amt,
     loans: [...s.loans, loan],
@@ -1416,7 +1463,7 @@ export function takeLoan(
       ),
       ...s.log,
     ].slice(0, LOG_CAP),
-  }
+  }, { category: 'loanPrincipal', amount: amt, cashEffect: amt, classification: 'liability', description: `Borrowed ${fmt(amt)}` })
 }
 
 /** Repay a borrow loan in full, immediately. */
@@ -1424,7 +1471,9 @@ export function payOffLoan(s: GameState, loanId: string): GameState {
   const loan = s.loans.find((l) => l.id === loanId && l.kind === 'borrow')
   if (!loan) return s
   if (s.cash < loan.outstanding) return s
-  return {
+  const principalRemaining = Math.max(0, loan.principal - Math.round(loan.principal * loan.collectionsDone / loan.totalCollections))
+  const interest = Math.max(0, loan.outstanding - principalRemaining)
+  let result = recordLedger({
     ...s,
     cash: s.cash - loan.outstanding,
     loans: s.loans.filter((l) => l.id !== loanId),
@@ -1432,7 +1481,9 @@ export function payOffLoan(s: GameState, loanId: string): GameState {
       news(s.week, `🏦 You paid off your ${fmt(loan.principal)} loan early (${fmt(loan.outstanding)} total).`, 'good'),
       ...s.log,
     ].slice(0, LOG_CAP),
-  }
+  }, { category: 'loanRepayment', amount: principalRemaining, cashEffect: -principalRemaining, classification: 'transfer', description: 'Early loan principal repayment' })
+  if (interest > 0) result = recordLedger(result, { category: 'loanInterest', amount: interest, cashEffect: -interest, classification: 'expense', description: 'Early loan interest repayment' })
+  return result
 }
 
 /** Lend cash to any rival studio on your own terms — no limits on amount or count. */
@@ -1473,7 +1524,7 @@ export function giveLoan(
     takenWeek: s.week,
     settled: false,
   }
-  return {
+  return recordLedger({
     ...s,
     cash: s.cash - amt,
     loans: [...s.loans, loan],
@@ -1485,7 +1536,7 @@ export function giveLoan(
       ),
       ...s.log,
     ].slice(0, LOG_CAP),
-  }
+  }, { category: 'lending', amount: amt, cashEffect: -amt, classification: 'asset', description: `Lent ${fmt(amt)} to ${studioName}` })
 }
 
 /** Stake cash in an AI studio's upcoming movie for a slice of its gross. */
@@ -1507,7 +1558,7 @@ export function investInMovie(s: GameState, studioName: string, amount: number):
     settled: false,
     takenWeek: s.week,
   }
-  return {
+  return recordLedger({
     ...s,
     cash: s.cash - amt,
     investments: [...s.investments, inv],
@@ -1519,7 +1570,7 @@ export function investInMovie(s: GameState, studioName: string, amount: number):
       ),
       ...s.log,
     ].slice(0, LOG_CAP),
-  }
+  }, { category: 'investment', amount: amt, cashEffect: -amt, classification: 'asset', description: `Investment in ${studioName}` })
 }
 
 // ---------------------------------------------------------------------------
@@ -1757,7 +1808,8 @@ function managerMakeMovie(s: GameState, events: string[]): GameState {
         if (!t) return false
         const busy = t.role === 'actor' ? Math.round(rand(6, 14)) : t.role === 'director' ? Math.round(rand(8, 16)) : Math.round(rand(4, 10))
         const hired = { ...t, hiredWeek: st.week, busyUntil: st.week + busy, asking: t.asking }
-        st = { ...st, cash: st.cash - t.asking, talents: st.talents.map(x => x.id === t.id ? hired : x) }
+        st = recordLedger({ ...st, cash: st.cash - t.asking, talents: st.talents.map(x => x.id === t.id ? hired : x) },
+          { category: 'talent', amount: t.asking, cashEffect: -t.asking, classification: 'expense', description: `Manager hired ${t.name}` })
         if (t.role === 'writer') seasonMovie.writerId = t.id
         else if (t.role === 'director') seasonMovie.directorId = t.id
         else seasonMovie.actorIds = [...seasonMovie.actorIds, t.id]
@@ -1787,7 +1839,8 @@ function managerMakeMovie(s: GameState, events: string[]): GameState {
         productionBudget: budget, deptBalance: deptBalance(depts),
       })
       
-      st = { ...st, cash: st.cash - budget }
+      st = recordLedger({ ...st, cash: st.cash - budget },
+        { category: 'production', amount: budget, cashEffect: -budget, classification: 'expense', description: `Manager production budget for "${seasonMovie.title}"` })
       const weeks = 3
       const prod: Production = {
         movie: { ...seasonMovie, productionBudget: budget, departments: { ...depts }, quality: q, cost: seasonMovie.cost + budget, status: `Filming (${weeks} weeks)` },
@@ -1818,7 +1871,8 @@ function managerMakeMovie(s: GameState, events: string[]): GameState {
       const cost = writeScriptCost(q)
       const title = mgr.customLabel ? `${mgr.customLabel}: ${randomTitle()}` : mgr.franchiseName ? `${mgr.franchiseName} ${['Part', 'II', 'III', 'IV', 'V', 'VI'][Math.min(5, (mgr.moviesMade % 6) + 1)]}` : randomTitle()
       script = { id: uid(), title, genre: genre2, quality: q, price: 0, source: 'written', contentType: mgrContentType }
-      st = { ...st, cash: st.cash - cost, scripts: [...st.scripts, script] }
+      st = recordLedger({ ...st, cash: st.cash - cost, scripts: [...st.scripts, script] },
+        { category: 'scripts', amount: cost, cashEffect: -cost, classification: 'expense', description: `Manager wrote script "${title}"` })
       break
     }
     if (!script) continue
@@ -1883,7 +1937,8 @@ function managerMakeMovie(s: GameState, events: string[]): GameState {
       const busy =
         t.role === 'actor' ? Math.round(rand(6, 14)) : t.role === 'director' ? Math.round(rand(8, 16)) : Math.round(rand(4, 10))
       const hired = { ...t, hiredWeek: st.week, busyUntil: st.week + busy, asking: t.asking }
-      st = { ...st, cash: st.cash - t.asking, talents: st.talents.map((x) => (x.id === t.id ? hired : x)) }
+      st = recordLedger({ ...st, cash: st.cash - t.asking, talents: st.talents.map((x) => (x.id === t.id ? hired : x)) },
+        { category: 'talent', amount: t.asking, cashEffect: -t.asking, classification: 'expense', description: `Manager hired ${t.name}` })
       if (t.role === 'writer') movie.writerId = t.id
       else if (t.role === 'director') movie.directorId = t.id
       else movie.actorIds = [...movie.actorIds, t.id]
@@ -1924,7 +1979,8 @@ function managerMakeMovie(s: GameState, events: string[]): GameState {
       deptBalance: deptBalance(depts),
     })
 
-    st = { ...st, cash: st.cash - budget }
+    st = recordLedger({ ...st, cash: st.cash - budget },
+      { category: 'production', amount: budget, cashEffect: -budget, classification: 'expense', description: `Manager production budget for "${movie.title}"` })
     const prod: Production = {
       movie: {
         ...movie,
@@ -2091,7 +2147,7 @@ function collectStreamingRevenue(s: GameState): GameState {
   const weeklyRevenue = Math.round(subscribers * p.subscriptionPrice)
 
   
-  return {
+  return recordLedger({
     ...s,
     streamingPlatform: true,
     myStreamingPlatform: {
@@ -2103,7 +2159,7 @@ function collectStreamingRevenue(s: GameState): GameState {
     },
     cash: s.cash + weeklyRevenue,
     stats: { ...s.stats, totalEarned: s.stats.totalEarned + weeklyRevenue },
-  }
+  }, { category: 'streaming', amount: weeklyRevenue, cashEffect: weeklyRevenue, classification: 'income', description: 'Weekly streaming subscription revenue' })
 }
 
 /**
@@ -2473,7 +2529,7 @@ function collectAdRevenue(s: GameState, events: string[]): GameState {
     addLog(s2, events, `📢 Ads served: ${adsShown.toLocaleString()} views → ${fmt(weeklyAdRevenue)} ad revenue${dealIncome > 0 ? ` + ${fmt(dealIncome)} from advertisers` : ''}.`, 'good')
   }
 
-  return {
+  return recordLedger({
     ...s2,
     cash: s2.cash + totalAdCash,
     stats: { ...s2.stats, totalEarned: s2.stats.totalEarned + totalAdCash },
@@ -2488,6 +2544,5 @@ function collectAdRevenue(s: GameState, events: string[]): GameState {
       adFreeSubscribers,
       totalSubRevenue: p.totalSubRevenue + subRevenue,
     },
-  }
+  }, { category: 'streaming', amount: totalAdCash, cashEffect: totalAdCash, classification: 'income', description: 'Weekly advertising and ad-free subscription revenue' })
 }
-

@@ -9,7 +9,10 @@ import {
   hireManager,
   fireManager,
   updateManager,
+  createScript,
+  buyScript,
 } from '../src/game/engine'
+import { calculateReports, createOpeningLedger } from '../src/game/reports'
 
 let failures = 0
 function assert(cond: boolean, msg: string): void {
@@ -24,10 +27,31 @@ function assert(cond: boolean, msg: string): void {
 // 1. custom starting balance
 const g = newGame('Verify Studios', 10_000_000)
 assert(g.cash === 10_000_000, `starting balance honored (${g.cash})`)
+assert((g.ledger ?? []).length === 1 && g.ledger![0].category === 'openingCapital', 'new games start with opening ledger entry')
+
+// 1b. ledger/report primitives (including loss and empty periods)
+const opening = createOpeningLedger(10_000_000)
+assert(opening.length === 1 && opening[0].cashEffect === 10_000_000, 'opening ledger records starting capital')
+const reportState = {
+  ...g,
+  cash: -500,
+  ledger: [
+    ...opening,
+    { id: 'income', week: 1, category: 'boxOffice' as const, amount: 2_000, cashEffect: 2_000, classification: 'income' as const, description: 'Ticket sales' },
+    { id: 'expense', week: 1, category: 'production' as const, amount: 3_000, cashEffect: -3_000, classification: 'expense' as const, description: 'Production' },
+  ],
+}
+const period = calculateReports(reportState, { startWeek: 1, endWeek: 1 })
+assert(period.profitAndLoss.totalIncome === 2_000 && period.profitAndLoss.totalExpenses === 3_000, 'report aggregates income and expenditure')
+assert(period.profitAndLoss.netProfit === -1_000, 'report preserves negative period profit')
+assert(period.overview.totals.cash === -500, 'report preserves negative cash')
+assert(calculateReports(reportState, { startWeek: 20, endWeek: 21 }).overview.points.length === 2, 'empty report range returns zero points')
+assert(period.balanceSheet.balanceCheck === period.balanceSheet.totalAssets - (period.balanceSheet.totalLiabilities + period.balanceSheet.totalEquity), 'balance check uses assets less liabilities and equity')
 
 // 2. take a loan
 const g2 = takeLoan(g, 2_000_000)
 assert(g2.cash === 12_000_000, 'loan cash received')
+assert((g2.ledger ?? []).some((e) => e.category === 'loanPrincipal' && e.cashEffect === 2_000_000), 'loan receipt is recorded in ledger')
 assert(g2.loans.length === 1, 'loan recorded')
 const loan = g2.loans[0]
 assert(loan.kind === 'borrow' && loan.outstanding === 2_300_000, `outstanding = principal+15% (${loan.outstanding})`)
@@ -37,12 +61,14 @@ let cur = g2
 for (let i = 0; i < 10; i++) cur = tick(cur)
 assert(cur.loans.length === 0, 'loan fully repaid after 10 weeks')
 assert(cur.cash <= 12_000_000 - 2_300_000 + 1, `cash net of loan+interest (${cur.cash})`)
+assert((cur.ledger ?? []).some((e) => e.category === 'loanRepayment') && (cur.ledger ?? []).some((e) => e.category === 'loanInterest'), 'loan principal and interest repayments are recorded')
 
 // 4. pay off early
 const g4 = takeLoan(newGame('Verify', 10_000_000), 1_000_000)
 const paid = payOffLoan(g4, g4.loans[0].id)
 assert(paid.loans.length === 0, 'pay off clears the loan')
 assert(paid.cash === 11_000_000 - 1_150_000, 'pay off deducts outstanding only')
+assert((paid.ledger ?? []).some((e) => e.category === 'loanRepayment') && (paid.ledger ?? []).some((e) => e.category === 'loanInterest'), 'early payoff records principal and interest')
 
 // 5. give a loan — matures with interest after 6 weeks
 const g5 = giveLoan(newGame('Verify', 10_000_000), 'Horizon Pictures', 1_000_000)
@@ -65,6 +91,7 @@ const amount = Math.round(budget * 0.3) // 30% stake
 const inv = investInMovie(g6, ai.name, amount)
 assert(inv.investments.length === 1, 'investment recorded')
 assert(inv.cash === 50_000_000 - amount, 'investment cash deducted')
+assert((inv.ledger ?? []).some((e) => e.category === 'investment' && e.cashEffect === -amount), 'investment funding is recorded as an asset transfer')
 // advance to release
 let c6 = inv
 let linked = false
@@ -81,6 +108,7 @@ const movie = c6.aiMovies.find((m) => m.id === finalInv.movieId)
 assert(movie !== undefined, 'invested movie exists')
 // Investment returns now use success multiplier — can be 1x to 50x base share
 assert(finalInv.totalReturn >= 0, `investment settled (${finalInv.totalReturn})`)
+assert((c6.ledger ?? []).some((e) => e.category === 'investmentReturn'), 'investment returns are recorded')
 assert(finalInv.totalReturn > amount * 0.01 || movie!.totalGross === 0, `investment earned returns (${finalInv.totalReturn} vs ${amount} invested)`)
 
 // 7. hype multiplier curve
@@ -143,6 +171,11 @@ const gm = hireManager(newGame('Verify', 10_000_000), {
 })
 assert(gm.managers.length === 1, 'manager hired')
 assert(gm.managers[0].genre === 'Action' && gm.managers[0].weeklySalary === 50_000, 'manager orders stored')
+const scripted = createScript(newGame('Verify', 10_000_000), 'Action', 60, 'Ledger Test')
+assert((scripted.ledger ?? []).some((e) => e.category === 'scripts'), 'script writing spend is recorded')
+const scriptBuyer = newGame('Verify', 10_000_000)
+const purchased = buyScript(scriptBuyer, scriptBuyer.market[0].id)
+assert((purchased.ledger ?? []).some((e) => e.category === 'scripts'), 'script purchase spend is recorded')
 // salary deduction: manager always tries to start a movie now
 const poor = tick(
   hireManager(newGame('Verify', 300_000), {
