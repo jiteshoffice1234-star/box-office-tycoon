@@ -431,7 +431,7 @@ export function tick(s: GameState): GameState {
       }
     } else if (prod.phase === 'marketing') {
       const strat = STRATEGIES.find((x) => x.name === prod.marketingStrategy) ?? STRATEGIES[2]
-      const spend = strat.pct * prod.movie.productionBudget
+      const spend = Math.min(st.cash, strat.pct * prod.movie.productionBudget)
       st.cash -= spend
       prod.movie.marketingSpent += spend
       prod.movie.cost += spend
@@ -516,7 +516,7 @@ export function tick(s: GameState): GameState {
         }
       } else if (prod.phase === 'marketing') {
         const strat = STRATEGIES.find((x) => x.name === prod.marketingStrategy) ?? STRATEGIES[2]
-        const spend = strat.pct * prod.movie.productionBudget
+        const spend = Math.min(st.cash, strat.pct * prod.movie.productionBudget)
         st.cash -= spend
         prod.movie.marketingSpent += spend
         prod.movie.cost += spend
@@ -565,7 +565,7 @@ export function tick(s: GameState): GameState {
             )
           }
           // manager franchise: auto-sequel if hit
-          if (!movie.isDisaster && mgr && movie.part < 6 && movie.totalGross > 0 && movie.totalGross >= movie.cost * 2.5) {
+          if (!movie.isDisaster && mgr && movie.part < 6 && movie.opening >= movie.cost * 2.5) {
             st.stats.franchises = Math.max(st.stats.franchises, movie.part + 1)
             // Actually create the franchise sequel production
             const franchiseName = movie.franchiseName ?? movie.title
@@ -1088,6 +1088,12 @@ export function hireTalent(s: GameState, talentId: string, offer: number): GameS
     }
   }
   const offerAmt = Math.round(offer)
+  if (offerAmt <= 0 || offerAmt > s.cash) {
+    return {
+      ...s,
+      log: [news(s.week, `You cannot afford ${t.name}'s ${fmt(offerAmt)} offer.`, 'bad'), ...s.log].slice(0, LOG_CAP),
+    }
+  }
   if (offerAmt < t.asking && Math.random() > acceptChance(offerAmt, t.asking)) {
     const next = { ...t, busyUntil: s.week + 2 }
     return {
@@ -1160,13 +1166,20 @@ export function dropCast(s: GameState, talentId: string): GameState {
   const t = findTalent(s, talentId)
   if (!t) return s
   const prod = { ...s.production, movie: { ...s.production.movie } }
+  const inCast = prod.movie.writerId === talentId || prod.movie.directorId === talentId || prod.movie.actorIds.includes(talentId)
+  if (!inCast) return s
   if (prod.movie.writerId === talentId) prod.movie.writerId = null
   else if (prod.movie.directorId === talentId) prod.movie.directorId = null
   else prod.movie.actorIds = prod.movie.actorIds.filter((id) => id !== talentId)
+  const refund = Math.max(0, t.asking)
+  const released = { ...t, hiredWeek: -1, busyUntil: 0 }
   return {
     ...s,
-    production: prod,
-    log: [news(s.week, `${t.name} was dropped from "${prod.movie.title}".`, 'info'), ...s.log].slice(0, LOG_CAP),
+    cash: s.cash + refund,
+    stats: { ...s.stats, totalSpent: Math.max(0, s.stats.totalSpent - refund) },
+    talents: s.talents.map((x) => (x.id === talentId ? released : x)),
+    production: { ...prod, movie: { ...prod.movie, cost: Math.max(0, prod.movie.cost - refund) } },
+    log: [news(s.week, `${t.name} was dropped from "${prod.movie.title}" and ${fmt(refund)} was refunded.`, 'info'), ...s.log].slice(0, LOG_CAP),
   }
 }
 
@@ -1246,14 +1259,25 @@ export function setDefaultStrategy(s: GameState, strategy: string): GameState {
 
 /** Choose streaming release for the current production. */
 export function setStreamingRelease(s: GameState): GameState {
-  if (!s.production) return s
+  if (!s.production || s.production.phase !== 'marketing') return s
   const movie = s.production.movie
+  const releaseWeek = s.week + MIN_MARKETING_WEEKS
   return {
     ...s,
-    production: { ...s.production, movie: { ...movie, releaseWindow: 'streaming' } },
+    production: {
+      ...s.production,
+      releaseWeek,
+      marketingStrategy: s.defaultStrategy,
+      movie: {
+        ...movie,
+        releaseWindow: 'streaming',
+        hype: initialHype(avgActorFame(movie, s)),
+        status: `Streaming release in ${MIN_MARKETING_WEEKS} weeks`,
+      },
+    },
     stats: { ...s.stats, streamingReleases: s.stats.streamingReleases + 1 },
     log: [
-      news(s.week, `📡 "${movie.title}" will release on your streaming platform — guaranteed revenue!`, 'info'),
+      news(s.week, `📡 "${movie.title}" is scheduled for streaming release in ${MIN_MARKETING_WEEKS} weeks.`, 'info'),
       ...s.log,
     ].slice(0, LOG_CAP),
   }
@@ -2302,7 +2326,7 @@ function rollAdOffers(s: GameState, _events: string[]): GameState {
   // Determine how many offers to roll this week (1-3, with 70% chance)
   if (Math.random() > 0.7) return s
   const numOffers = Math.floor(rand(1, 4)) // 1, 2, or 3 offers per week
-  const pending = p.adDeals.filter(d => d.weeksRemaining === 0)
+  const pending = p.adDeals.filter(d => d.weeksRemaining <= 0 && d.weeksRemaining > -8)
   const availableSlots = Math.max(0, 8 - pending.length) // max 8 pending
   const offersToAdd = Math.min(numOffers, availableSlots)
   if (offersToAdd <= 0) return s
@@ -2314,6 +2338,7 @@ function rollAdOffers(s: GameState, _events: string[]): GameState {
 
   const newDeals: import('./types').AdvertiserDeal[] = []
   const usedMovies = new Set<string>()
+  const usedCompanyMovies = new Set<string>() // track company+movie combos in this batch
 
   for (let i = 0; i < offersToAdd; i++) {
     const movie = pick(availableMovies.filter(m => !usedMovies.has(m.movieId)))
@@ -2321,10 +2346,13 @@ function rollAdOffers(s: GameState, _events: string[]): GameState {
     usedMovies.add(movie.movieId)
 
     const company = pick(companies.filter(c => {
-      // No duplicate offer from same company for the same movie
+      // No duplicate offer from same company for the same movie (check both existing AND this batch)
+      const key = c + '|' + movie.movieId
+      if (usedCompanyMovies.has(key)) return false
       return !p.adDeals.some(d => d.company === c && d.movieId === movie.movieId)
     }))
     if (!company) continue
+    usedCompanyMovies.add(company + '|' + movie.movieId)
 
     // Payment scales with: audience × movie quality × rate card
     const movieBonus = movie.quality * 0.01 // q100 → 1×, q50 → 0.5×
@@ -2351,9 +2379,9 @@ function rollAdOffers(s: GameState, _events: string[]): GameState {
   }
 }
 
-/** Offers waiting for a decision (weeksRemaining === 0) */
+/** Offers waiting for a decision (weeksRemaining <= 0, not yet expired at -8) */
 export function pendingAdDeals(s: GameState): import('./types').AdvertiserDeal[] {
-  return s.myStreamingPlatform.adDeals.filter(d => d.weeksRemaining === 0)
+  return s.myStreamingPlatform.adDeals.filter(d => d.weeksRemaining <= 0 && d.weeksRemaining > -8)
 }
 
 /** The full weekly ad economy tick — called from tick() */
@@ -2394,9 +2422,9 @@ function collectAdRevenue(s: GameState, events: string[]): GameState {
   let pendingCount = 0
   for (const d0 of p.adDeals) {
     const d = { ...d0 }
-    if (d.weeksRemaining === 0) {
-      // pending offers expire after 8 weeks if not signed
-      d.weeksRemaining = -(d.weeksRemaining - 1) // -1, -2, -3 …
+    if (d.weeksRemaining <= 0) {
+      // pending offers (0) or countdown (-1 to -7): expire after 8 weeks if not signed
+      d.weeksRemaining -= 1
       if (d.weeksRemaining <= -8) {
         addLog(s2, events, `📄 ${d.company} withdrew their ad offer for "${d.movieTitle || 'all content'}".`, 'info')
         continue
@@ -2404,12 +2432,18 @@ function collectAdRevenue(s: GameState, events: string[]): GameState {
       if (pendingCount < 8) { surviving.push(d); pendingCount++ }
       continue
     }
-    // Extend any old short deals to 30 years (migration-in-place)
+    // Extend any old short SIGNED deals to 30 years (migration-in-place)
+    // Only extend if already accepted (weeksRemaining > 0) — don't extend pending offers
     if (d.weeksRemaining > 0 && d.weeksRemaining < 1560) {
       d.weeksRemaining = 1560
     }
     if (seenIds.has(d.id)) continue // dedupe only by id, same company can have multiple deals
     seenIds.add(d.id)
+    // Cap total active deals at 50 to prevent unbounded growth
+    if (surviving.length >= 50) {
+      addLog(s2, events, `📄 ${d.company} deal skipped — max 50 active deals reached.`, 'info')
+      continue
+    }
     if (freeViewers < d.minViewers) {
       if (!d.breached) {
         d.breached = true

@@ -119,8 +119,9 @@ export function computeOpening(a: OpeningArgs): number {
   // Competition penalty
   const comp = clamp(1 - 0.08 * a.sameWeekCompetition, 0.5, 1)
 
-  // Final calculation: luck × quality × hype × franchise × competition × budget
-  const raw = luckMultiplier * qualityMod * hypeMod * franchiseMod * comp * budget
+  // Final calculation: luck × quality × hype × franchise × competition × timing × budget
+  const timing = timingMultiplier(a.genre, a.releaseWeek)
+  const raw = luckMultiplier * qualityMod * hypeMod * franchiseMod * comp * timing * budget
 
   // Floor: even the worst movie earns something
   const opening = Math.max(budget * 0.001, raw)

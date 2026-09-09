@@ -92,9 +92,15 @@ export function Casting({ state, apply }: { state: GameState; apply: (fn: (s: Ga
                           onChange={(e) => setOffers((o) => ({ ...o, [t.id]: Number(e.target.value) }))}
                         />
                       </div>
-                      <Btn small kind={pct < 100 ? 'primary' : 'default'} onClick={() => apply((s) => hireTalent(s, t.id, amt))}>
+                      <Btn
+                        small
+                        kind={pct < 100 ? 'primary' : 'default'}
+                        disabled={amt > state.cash}
+                        onClick={() => apply((s) => hireTalent(s, t.id, amt))}
+                      >
                         {pct < 100 ? `Negotiate ${pct}% → ${fmtMoney(amt)}` : `Hire ${fmtMoney(amt)}`}
                       </Btn>
+                      {amt > state.cash && <span className="asking">Insufficient cash</span>}
                     </>
                   )}
                 </div>

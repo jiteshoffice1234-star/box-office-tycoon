@@ -25,6 +25,33 @@ export function loadGame(): GameState | null {
     ) {
       return null
     }
+    // Older and partially written saves may omit newer top-level collections.
+    // Fill those before feature migrations so a recoverable save is not thrown away.
+    if (!Array.isArray(parsed.scripts)) parsed.scripts = []
+    if (!Array.isArray(parsed.market)) parsed.market = []
+    if (!Array.isArray(parsed.aiMovies)) parsed.aiMovies = []
+    if (!Array.isArray(parsed.aiStudios)) parsed.aiStudios = []
+    if (!Array.isArray(parsed.log)) parsed.log = []
+    if (!parsed.production) parsed.production = null
+    if (!parsed.stats) {
+      parsed.stats = {
+        moviesMade: 0,
+        totalEarned: 0,
+        totalSpent: 0,
+        blockbusters: 0,
+        disasters: 0,
+        seriesMade: 0,
+        franchises: 0,
+        streamingReleases: 0,
+        internationalDeals: 0,
+      }
+    }
+    if (typeof parsed.cash !== 'number' || !Number.isFinite(parsed.cash)) parsed.cash = 0
+    if (typeof parsed.reputation !== 'number' || !Number.isFinite(parsed.reputation)) parsed.reputation = 0
+    if (typeof parsed.autoAdvance !== 'boolean') parsed.autoAdvance = false
+    if (typeof parsed.defaultStrategy !== 'string') parsed.defaultStrategy = 'Standard'
+    if (typeof parsed.gameOver !== 'boolean') parsed.gameOver = false
+    if (typeof parsed.createdAt !== 'number') parsed.createdAt = Date.now()
     // migrate v1 saves -> v2 (loans & investments were added)
     if (!Array.isArray(parsed.loans)) parsed.loans = []
     if (!Array.isArray(parsed.investments)) parsed.investments = []
@@ -99,12 +126,27 @@ export function loadGame(): GameState | null {
     }
     if (typeof parsed.myStreamingPlatform.adRateCard !== 'number') parsed.myStreamingPlatform.adRateCard = 1
     // Migrate old short-term deals to 30-year contracts
+    // Also clean up corrupted deals from the pending offer bug
+    parsed.myStreamingPlatform.adDeals = parsed.myStreamingPlatform.adDeals.filter((d: { weeksRemaining?: number }) => {
+      // Remove corrupted pending deals (should be negative but were set to 1 by bug)
+      if (d.weeksRemaining !== undefined && d.weeksRemaining > 0 && d.weeksRemaining < 10) {
+        return false // corrupted — was a pending offer that got wrong value
+      }
+      return true
+    })
     for (const d of parsed.myStreamingPlatform.adDeals) {
       if (d.weeksRemaining > 0 && d.weeksRemaining < 1560) {
-        d.weeksRemaining = 1560 // extend to 30 years
+        d.weeksRemaining = 1560 // extend signed deals to 30 years
       }
       if (d.movieId === undefined) d.movieId = null
       if (d.movieTitle === undefined) d.movieTitle = null
+    }
+    // Cap total deals at 50 to prevent unbounded growth from corrupted saves
+    if (parsed.myStreamingPlatform.adDeals.length > 50) {
+      // Keep the newest 50 deals (sorted by id which contains timestamp)
+      parsed.myStreamingPlatform.adDeals = parsed.myStreamingPlatform.adDeals
+        .sort((a: { id: string }, b: { id: string }) => b.id.localeCompare(a.id))
+        .slice(0, 50)
     }
     if (typeof parsed.myStreamingPlatform.autoRelease !== 'boolean') parsed.myStreamingPlatform.autoRelease = true
     if (typeof parsed.myStreamingPlatform.autoReleaseDelay !== 'number') parsed.myStreamingPlatform.autoReleaseDelay = 15

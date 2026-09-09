@@ -101,41 +101,74 @@ export default function App() {
           }
         }}
       />
-      <div className="app-content">
-        {decision && (
-          <div className="banner">
-            <span>{decision}</span>
-            <Btn small kind="primary" onClick={() => pending && setTab(pending)}>
-              Go →
-            </Btn>
+      <div className="app-body">
+        <aside className="studio-rail" aria-label="Studio control room">
+          <div className="rail-brand">
+            <span className="rail-mark" aria-hidden="true">BO</span>
+            <span><b>Box Office</b><small>Studio control room</small></span>
           </div>
-        )}
-        <main>
-          {tab === 'studio' && <Studio state={state} go={setTab} />}
-          {tab === 'scripts' && <Scripts state={state} apply={apply} />}
-          {tab === 'casting' && <Casting state={state} apply={apply} />}
-          {tab === 'marketing' && <Marketing state={state} apply={apply} />}
-          {tab === 'movies' && <Movies state={state} apply={apply} />}          {tab === 'bank' && <Bank state={state} apply={apply} />}
-          {tab === 'managers' && <Managers state={state} apply={apply} />}
-        </main>
-        <footer className="footer">
-          <span>Box Office Tycoon · saves automatically</span>
-        </footer>
+          <div className="rail-section-label">Operations</div>
+          <TabNav tabs={TABS} tab={tab} pending={pending} onSelect={setTab} variant="rail" />
+          <div className="rail-footer">
+            <span className="live-dot" aria-hidden="true" /> Autosave active
+          </div>
+        </aside>
+        <div className="app-content">
+          {decision && (
+            <div className="banner">
+              <span><b>Decision required</b> {decision}</span>
+              <Btn small kind="primary" onClick={() => pending && setTab(pending)}>
+                Open decision →
+              </Btn>
+            </div>
+          )}
+          <main id="main-content">
+            {tab === 'studio' && <Studio state={state} go={setTab} />}
+            {tab === 'scripts' && <Scripts state={state} apply={apply} />}
+            {tab === 'casting' && <Casting state={state} apply={apply} />}
+            {tab === 'marketing' && <Marketing state={state} apply={apply} />}
+            {tab === 'movies' && <Movies state={state} apply={apply} />}
+            {tab === 'bank' && <Bank state={state} apply={apply} />}
+            {tab === 'managers' && <Managers state={state} apply={apply} />}
+          </main>
+          <footer className="footer">
+            <span>Box Office Tycoon · saves automatically</span>
+          </footer>
+        </div>
       </div>
-      <nav className="bottom-nav" aria-label="Main navigation">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            className={`nav-item${tab === t.id ? ' active' : ''}`}
-            onClick={() => setTab(t.id)}
-          >
-            <span className="nav-icon">{t.icon}</span>
-            <span>{t.label}</span>
-            {pending === t.id && <span className="nav-dot" />}
-          </button>
-        ))}
-      </nav>
+      <TabNav tabs={TABS} tab={tab} pending={pending} onSelect={setTab} variant="bottom" />
     </div>
+  )
+}
+
+function TabNav({
+  tabs,
+  tab,
+  pending,
+  onSelect,
+  variant,
+}: {
+  tabs: typeof TABS
+  tab: Tab
+  pending: Tab | null
+  onSelect: (tab: Tab) => void
+  variant: 'rail' | 'bottom'
+}) {
+  return (
+    <nav className={variant === 'rail' ? 'rail-nav' : 'bottom-nav'} aria-label="Main navigation">
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          className={variant === 'rail' ? `rail-item${tab === t.id ? ' active' : ''}` : `nav-item${tab === t.id ? ' active' : ''}`}
+          onClick={() => onSelect(t.id)}
+          aria-current={tab === t.id ? 'page' : undefined}
+        >
+          <span className={variant === 'rail' ? 'rail-icon' : 'nav-icon'} aria-hidden="true">{t.icon}</span>
+          <span className={variant === 'rail' ? 'rail-label' : 'nav-label'}>{t.label}</span>
+          {pending === t.id && <span className="nav-dot" aria-hidden="true" title="New decision ready for this tab" />}
+        </button>
+      ))}
+    </nav>
   )
 }
 

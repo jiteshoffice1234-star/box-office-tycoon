@@ -13,6 +13,17 @@ export function Studio({ state, go }: { state: GameState; go: (t: Tab) => void }
   const nextTier = TIERS[tierIdx + 1]
   const s = state
   const weekNum = s.week % 52
+  const currentGross = s.movies.reduce((sum, movie) => sum + (movie.weekly.find((w) => w.week === s.week)?.gross ?? 0), 0)
+  const pulsePhase = s.production
+    ? s.production.phase === 'preProduction'
+      ? 'Casting'
+      : s.production.phase === 'production'
+        ? `Filming · ${s.production.weeksLeft}w`
+        : s.production.releaseWeek
+          ? `Release · W${s.production.releaseWeek - s.week}`
+          : 'Release decision'
+    : 'Open slate'
+  const pulseStatus = s.production?.movie.title ?? 'Your next move is ready'
 
   return (
     <div className="grid">
@@ -24,6 +35,32 @@ export function Studio({ state, go }: { state: GameState; go: (t: Tab) => void }
         <Stat label="Content" value={s.stats.moviesMade} sub={`${s.stats.blockbusters} 🔥 ${s.stats.disasters} 💀 ${s.stats.seriesMade} 📺`} />
         <Stat label="Total earned" value={fmtMoney(s.stats.totalEarned)} sub={`🔁 ${s.stats.franchises} franchise parts`} />
       </div>
+
+      <section className="studio-pulse" aria-label="Studio pulse">
+        <div className="pulse-heading">
+          <span className="eyebrow">Live studio board</span>
+          <span className="pulse-week">WEEK {String(s.week).padStart(2, '0')}</span>
+        </div>
+        <div className="pulse-track" aria-hidden="true">
+          <span className="pulse-node active" />
+          <span className="pulse-line" />
+          <span className={`pulse-node${s.production ? ' active' : ''}`} />
+          <span className="pulse-line" />
+          <span className={`pulse-node${s.production?.releaseWeek ? ' active' : ''}`} />
+          <span className="pulse-line" />
+          <span className={`pulse-node${currentGross > 0 ? ' active' : ''}`} />
+        </div>
+        <div className="pulse-labels">
+          <span>Now</span>
+          <span>{pulsePhase}</span>
+          <span>Release</span>
+          <span>Cashflow</span>
+        </div>
+        <div className="pulse-footer">
+          <strong>{pulseStatus}</strong>
+          <span>{currentGross > 0 ? `+${fmtMoney(currentGross)} this week` : 'No box office recorded this week'}</span>
+        </div>
+      </section>
 
       <div className="row">
         <Card title="Production pipeline">

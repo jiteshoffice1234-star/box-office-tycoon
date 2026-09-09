@@ -10,7 +10,8 @@
         "sync:android": "node node_modules/@capacitor/cli/bin/capacitor sync android",
         "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
         "balance": "node node_modules/tsx/dist/cli.mjs scripts/balance.ts",
-        "verify": "node node_modules/tsx/dist/cli.mjs scripts/verify-finance.ts"
+        "verify": "node node_modules/tsx/dist/cli.mjs scripts/verify-finance.ts",
+        "verify:regressions": "node node_modules/tsx/dist/cli.mjs scripts/verify-regressions.ts"
     },
     "dependencies": {
         "@capacitor/android": "^8.5.0",
