@@ -5,7 +5,7 @@ import type { GameState } from '../game/types'
 import { Bar, Btn, Card, Stat, fmtMoney } from './ui'
 import { genreMeta } from '../game/data'
 
-export type Tab = 'studio' | 'scripts' | 'casting' | 'marketing' | 'movies' | 'bank' | 'managers'
+export type Tab = 'studio' | 'scripts' | 'casting' | 'marketing' | 'movies' | 'bank' | 'managers' | 'reports'
 
 export function Studio({ state, go }: { state: GameState; go: (t: Tab) => void }) {
   const tier = tierForRep(state.reputation)

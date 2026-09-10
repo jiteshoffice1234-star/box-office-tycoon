@@ -216,8 +216,8 @@ html, body {
 
 /* ============ APP SHELL ============ */
 .app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; animation: fadeUp 0.35s var(--easing); }
-.app-content { flex: 1; padding: 16px 16px calc(var(--nav-height) + 24px); max-width: 860px; width: 100%; margin: 0 auto; }
-.app-content > main { display: flex; flex-direction: column; gap: 12px; }
+.app-content { flex: 1; min-width: 0; padding: 16px 16px calc(var(--nav-height) + 24px); max-width: 860px; width: 100%; margin: 0 auto; }
+.app-content > main { display: flex; min-width: 0; flex-direction: column; gap: 12px; }
 
 /* ============ HEADER — Clean with shadow ============ */
 .header {
@@ -1003,6 +1003,52 @@ html, body { background-color: var(--color-bg); background-image: repeating-line
 .banner span { min-width: 0; overflow-wrap: anywhere; }
 .banner b { color: var(--color-accent); font-family: var(--font-display); font-size: 16px; font-weight: 400; letter-spacing: 0.02em; margin-right: 5px; }
 
+/* ============ REPORTS — finance desk ============ */
+.reports-page { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 14px; }
+.reports-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; padding: 4px 2px 2px; }
+.reports-heading h1 { margin: 5px 0 4px; font: 500 30px/1.05 var(--font-display); letter-spacing: .02em; }
+.reports-range { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--color-border); background: var(--color-surface); border-radius: 4px; }
+.report-range-btn { border: 0; border-radius: 2px; background: transparent; color: var(--color-text-secondary); cursor: pointer; padding: 8px 10px; font: 10px var(--font-data); letter-spacing: .04em; text-transform: uppercase; }
+.report-range-btn.active { background: var(--color-primary); color: #fff; }
+.report-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.report-tab { display: grid; gap: 4px; padding: 13px 14px; text-align: left; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-surface); color: var(--color-text-secondary); cursor: pointer; }
+.report-tab strong { color: var(--color-text); font: 500 15px var(--font-display); }
+.report-tab span { font: 9px var(--font-data); letter-spacing: .1em; text-transform: uppercase; }
+.report-tab.active { border-color: var(--color-primary); box-shadow: inset 3px 0 var(--color-primary); }
+.report-tab.active span { color: var(--color-primary); }
+.reports-stats .stat { min-width: 0; }
+.reports-stats .stat-value { font-size: 24px; }
+.finance-chart-wrap { min-width: 0; overflow-x: auto; padding: 4px 0 0; }
+.finance-chart { display: block; min-width: 560px; width: 100%; height: 250px; overflow: visible; }
+.chart-line { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.chart-income { stroke: var(--color-success); }
+.chart-expense { stroke: var(--color-danger); }
+.chart-profit { stroke: var(--color-accent); }
+.chart-cash { stroke: var(--color-info); stroke-dasharray: 7 5; }
+.chart-zero { stroke: var(--color-border-strong); stroke-dasharray: 3 4; }
+.chart-axis-label { fill: var(--color-text-muted); font: 9px var(--font-data); }
+.chart-axis-foot, .chart-legend { display: flex; justify-content: space-between; color: var(--color-text-muted); font: 9px var(--font-data); letter-spacing: .06em; text-transform: uppercase; }
+.chart-legend { justify-content: flex-start; flex-wrap: wrap; gap: 14px; margin-top: 8px; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend-dot { width: 7px; height: 7px; display: inline-block; border-radius: 50%; }
+.legend-dot.income { background: var(--color-success); }
+.legend-dot.expense { background: var(--color-danger); }
+.legend-dot.profit { background: var(--color-accent); }
+.legend-dot.cash { background: var(--color-info); }
+.report-empty { min-height: 180px; display: grid; place-items: center; }
+.statement-grid, .pnl-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.pnl-columns { grid-template-columns: repeat(2, 1fr); }
+.statement-section, .pnl-section { border: 1px solid var(--color-border); background: var(--color-surface-alt); padding: 12px; }
+.statement-section h2, .pnl-section h2 { margin-bottom: 8px; font: 500 17px var(--font-display); letter-spacing: .03em; }
+.statement-row, .statement-total { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--color-border); font-size: 12px; }
+.statement-row .amount, .statement-total .amount { font-family: var(--font-data); white-space: nowrap; }
+.statement-total { margin-top: 5px; padding-top: 10px; border-bottom: 0; font-weight: 800; }
+.amount { font-variant-numeric: tabular-nums; }
+.amount.negative { color: var(--color-danger); }
+.balance-check, .pnl-result { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 12px 14px; border-left: 3px solid var(--color-success); background: var(--green-bg); font: 11px var(--font-data); text-transform: uppercase; letter-spacing: .08em; }
+.balance-check.unbalanced, .pnl-result.negative { border-left-color: var(--color-danger); background: var(--red-bg); color: var(--color-danger); }
+.balance-check strong, .pnl-result strong { font-size: 14px; }
+
 @media (max-width: 767px) {
   .app-body { display: block; }
   .studio-rail { display: none; }
@@ -1010,6 +1056,14 @@ html, body { background-color: var(--color-bg); background-image: repeating-line
   .app-body + .bottom-nav { display: flex; }
   .banner { align-items: flex-start; flex-wrap: wrap; }
   .banner .btn { width: 100%; }
+}
+
+@media (max-width: 700px) {
+  .reports-heading { align-items: stretch; flex-direction: column; }
+  .reports-range { width: 100%; max-width: 100%; min-width: 0; }
+  .report-range-btn { flex: 1 1 0; min-width: 0; padding-inline: 5px; }
+  .report-tabs, .statement-grid, .pnl-columns { grid-template-columns: 1fr; }
+  .reports-stats { width: 100%; max-width: 100%; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 768px) {

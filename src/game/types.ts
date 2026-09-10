@@ -175,6 +175,88 @@ export interface GameStats {
   internationalDeals: number
 }
 
+export type LedgerCategory =
+  | 'openingCapital'
+  | 'production'
+  | 'marketing'
+  | 'scripts'
+  | 'talent'
+  | 'managerSalary'
+  | 'operatingCost'
+  | 'boxOffice'
+  | 'streaming'
+  | 'otherIncome'
+  | 'investment'
+  | 'loanPrincipal'
+  | 'loanInterest'
+  | 'loanRepayment'
+  | 'lending'
+  | 'investmentReturn'
+
+export type StatementClassification = 'income' | 'expense' | 'asset' | 'liability' | 'equity' | 'transfer'
+
+export interface LedgerEntry {
+  id: string
+  week: number
+  category: LedgerCategory
+  amount: number
+  cashEffect: number
+  classification: StatementClassification
+  description: string
+}
+
+export interface ReportRange {
+  startWeek: number
+  endWeek: number
+}
+
+export interface ReportTotals {
+  income: number
+  expenses: number
+  netProfit: number
+  cash: number
+  liabilities: number
+  equity: number
+  incomeByCategory: Partial<Record<LedgerCategory, number>>
+  expenseByCategory: Partial<Record<LedgerCategory, number>>
+}
+
+export interface ReportPoint {
+  week: number
+  income: number
+  expenses: number
+  netProfit: number
+  cash: number
+  liabilities: number
+  equity: number
+}
+
+export interface BalanceSheet {
+  asOfWeek: number
+  assets: { cash: number; workInProgress: number; releasedContent: number; loansReceivable: number; investments: number; other: number }
+  liabilities: { borrowedLoans: number; other: number }
+  equity: { openingCapital: number; retainedEarnings: number; currentPeriodProfit: number }
+  totalAssets: number
+  totalLiabilities: number
+  totalEquity: number
+  balanceCheck: number
+}
+
+export interface ProfitAndLoss {
+  range: ReportRange
+  income: Partial<Record<LedgerCategory, number>>
+  expenses: Partial<Record<LedgerCategory, number>>
+  totalIncome: number
+  totalExpenses: number
+  netProfit: number
+}
+
+export interface ReportBundle {
+  overview: { points: ReportPoint[]; totals: ReportTotals }
+  balanceSheet: BalanceSheet
+  profitAndLoss: ProfitAndLoss
+}
+
 export type LoanFrequency = 'daily' | 'weekly' | 'monthly'
 
 export interface Loan {
@@ -381,4 +463,6 @@ export interface GameState {
   myStreamingPlatform: StreamingPlatform
   internationalMarkets: boolean
   lastEventWeek: number
+  /** Optional while loading pre-ledger saves; new engines populate this. */
+  ledger?: LedgerEntry[]
 }
