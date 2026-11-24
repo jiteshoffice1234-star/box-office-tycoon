@@ -28,7 +28,13 @@ const preloadFonts = {
   },
 }
 
+// Deploy under a subpath (GitHub Pages: GH_PAGES_BASE=box-office-tycoon) or at root
+// (local/dev). Read WITHOUT a leading slash so no shell mangles it.
+const rawBase = process.env.GH_PAGES_BASE || '';
+const base = rawBase ? `/${rawBase.replace(/^\/+|\/+$/g, '')}/` : '/';
+
 export default {
+  base,
   plugins: [preloadFonts],
   root: process.cwd(),
   esbuild: {
